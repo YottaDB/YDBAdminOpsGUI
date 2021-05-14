@@ -16,25 +16,17 @@ RunShellCommand(Command,RET)
 	N DEV,COUNTER,STR,IO S COUNTER=0
 	S IO=$IO
 	S DEV="RunShellCommmandPipe"_$J
-	O DEV:(shell="/bin/bash":command=Command:readonly)::"PIPE"
+	O DEV:(shell="/bin/sh":command=Command:readonly)::"PIPE"
 	U DEV F  Q:$ZEOF=1  R STR:2 S RET($I(COUNTER))=STR Q:'$T
 	C DEV I $G(RET(COUNTER))="" K RET(COUNTER)
 	U IO
 	Q
 	;
 DirectoryExists(PATH)
-	N RET,COMMMAND
-	S COMMAND="[ -d """_PATH_""" ] && echo ""exists"""
-	D RunShellCommand(COMMAND,.RET)
-	I $G(RET(1))="exists" Q 1
-	Q 0
+	Q $ZSEARCH(PATH)]""
 	;
 FileExists(PATH)
-	N RET,COMMMAND
-	S COMMAND="[ -f """_PATH_""" ] && echo ""exists"""
-	D RunShellCommand(COMMAND,.RET)
-	I $G(RET(1))="exists" Q 1
-	Q 0
+	Q $ZSEARCH(PATH)]""
 	;
 CreateDirectoryTree(PATH)
 	N RET,COMMMAND
@@ -58,7 +50,7 @@ GetGlobalList(%ZG,PATTERN)
 ReadFileByLine(FILE,RET)
 	N SRC,LINE,COUNTER,IO
 	S SRC=FILE,IO=$IO
-	O SRC:(readonly)
+	O SRC:(readonly:chset="M")
 	F  U SRC R LINE:2 Q:$ZEOF  Q:'$T  D
 	. I $E(LINE,$L(LINE))=$C(13) S LINE=$E(LINE,1,$L(LINE)-1)
 	. I $E(LINE,$L(LINE))=$C(10) S LINE=$E(LINE,1,$L(LINE)-1)
@@ -70,7 +62,7 @@ ReadFileByChunk(FILE,CHUNK,RET)
 	N SRC,LINE,COUNTER,IO
 	S IO=$IO
 	S SRC=FILE
-	O SRC:(readonly:fixed:recordsize=CHUNK)
+	O SRC:(readonly:fixed:recordsize=CHUNK:chset="M")
 	F  U SRC R LINE:2 Q:$ZEOF  Q:'$T  D
 	. S RET($I(COUNTER))=LINE
 	C SRC
@@ -79,14 +71,11 @@ ReadFileByChunk(FILE,CHUNK,RET)
 	;
 WriteFile(FILE,DATA)
 	N IO S IO=$IO
-	O FILE:(newversion:chset="M")
+	O FILE:(newversion)
 	N A S A="" F  S A=$O(DATA(A)) Q:A=""  U FILE W DATA(A),!
 	C FILE
 	U IO
 	Q
 	;
-UP(STR)	Q $TR(STR,"abcdefghijklmnopqrstuvwxyz","ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-LO(STR)	Q $TR(STR,"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz")
-	;
-	;
-	;
+UP(STR)	Q $ZCONVERT(STR,"U")
+LOW(STR) Q $ZCONVERT(STR,"L")

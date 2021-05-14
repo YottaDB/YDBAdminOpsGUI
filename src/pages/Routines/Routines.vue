@@ -497,6 +497,7 @@ export default {
       }
       if (data && data.RLIST) {
         this.routinesList = data.RLIST;
+        
       } else {
         this.routinesList = [];
       }
@@ -673,7 +674,7 @@ export default {
       this.generateNewTableKey();
     }
   },
-  async created() {
+  async mounted() {
     this.collapsed = !!this.$q.localStorage.getItem("ydb-routines-collapsed");
     if (this.collapsed) {
       this.splitterModel = 0;

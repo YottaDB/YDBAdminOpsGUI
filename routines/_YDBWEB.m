@@ -14,18 +14,9 @@
 	;
 	;
 ROUTES
-	S YDBWEB(":WS","ROUTES","GET","gde/get","get^%YDBWEBGDE")=""
-	S YDBWEB(":WS","ROUTES","POST","gde/verify","verify^%YDBWEBGDE")=""
-	S YDBWEB(":WS","ROUTES","POST","gde/save","save^%YDBWEBGDE")=""
-	S YDBWEB(":WS","ROUTES","POST","gde/add","add^%YDBWEBGDE")=""
-	S YDBWEB(":WS","ROUTES","POST","gde/delete","delete^%YDBWEBGDE")=""
 	S YDBWEB(":WS","ROUTES","POST","ydbwebapi","API^%YDBWEBAPI")=""
-	S YDBWEB(":WS","ROUTES","OPTIONS","gde/get","get^%YDBWEBGDE")=""
-	S YDBWEB(":WS","ROUTES","OPTIONS","gde/verify","verify^%YDBWEBGDE")=""
-	S YDBWEB(":WS","ROUTES","OPTIONS","gde/save","save^%YDBWEBGDE")=""
-	S YDBWEB(":WS","ROUTES","OPTIONS","gde/add","add^%YDBWEBGDE")=""
-	S YDBWEB(":WS","ROUTES","OPTIONS","gde/delete","delete^%YDBWEBGDE")=""
 	S YDBWEB(":WS","ROUTES","OPTIONS","ydbwebapi","API^%YDBWEBAPI")=""
+	S YDBWEB(":WS","ROUTES","GET","YottaDB","SERVESTATIC^%YDBWEBAPI")=""
 	;
 	Q	
 	;
@@ -102,7 +93,7 @@ VIDS(HTTPREQ,HTTPRSP,HTTPARGS)
 JOB(TCPPORT)
 	S @("$ZINTERRUPT=""I $$JOBEXAM^%YDBWEBZU($ZPOSITION)""")
 	S TCPIO="SCK$"_TCPPORT
-	O TCPIO:(LISTEN=TCPPORT_":TCP":delim=$C(13,10):attach="server"):15:"socket" 
+	O TCPIO:(LISTEN=TCPPORT_":TCP":delim=$C(13,10):attach="server":chset="M"):15:"socket" 
 	E  U 0 W !,"error cannot open port "_TCPPORT Q
 	U TCPIO:(CHSET="M")
 	W /LISTEN(5)
@@ -152,7 +143,7 @@ WAIT
 	S HTTPERR=0
 	D RESPOND
 	S $ETRAP="G ETSOCK^%YDBWEB"
-	U %WTCP:(nodelim)
+	U %WTCP:(nodelim:chset="M")
 	I $G(HTTPERR) D RSPERROR
 	D SENDATA C %WTCP  HALT
 	I $G(HTTPRSP("header","Connection"))="close" C %WTCP
@@ -247,8 +238,11 @@ MATCHF(ROUTINE,ARGS,AUTHNODE)
 	S:$E(PATH)="/" PATH=$E(PATH,2,$L(PATH))
 	N DONE S DONE=0
 	N PATH1 S PATH1=$$URLDEC($P(PATH,"/",1,9999),1)
+	N PATH1 S PATH1=$$URLDEC($P(PATH,"/",1),1)
 	N PATTERN S PATTERN=PATH1
 	I PATTERN="" S PATTERN="/"
+	I PATTERN=""  S PATTERN="YottaDB"
+	I PATTERN="/" S PATTERN="YottaDB"
 	I '$D(YDBWEB(":WS","ROUTES")) D ROUTES
 	I $D(YDBWEB(":WS","ROUTES",HTTPREQ("method"),PATTERN)) D
 	. S ROUTINE=$O(YDBWEB(":WS","ROUTES",HTTPREQ("method"),PATTERN,""))
@@ -262,18 +256,18 @@ SENDATA
 	D W($$RSPLINE()_$C(13,10))
 	;D W("Date: "_$$GMT_$C(13,10))
 	I $D(HTTPREQ("Content-Disposition")) D
-	.  D W("Content-Disposition: "_HTTPREQ("Content-Disposition")_$C(13,10))
+	. D W("Content-Disposition: "_HTTPREQ("Content-Disposition")_$C(13,10))
 	I $D(HTTPREQ("X-Accel-Redirect")) D
 	. D W("X-Accel-Redirect: "_HTTPREQ("X-Accel-Redirect")_$C(13,10))
 	I $D(HTTPREQ("set_cookie")) D
 	. D W("Set-Cookie: "_HTTPREQ("set_cookie")_$C(13,10))
 	I $D(HTTPREQ("location")) D
-	.  D W("Location: "_HTTPREQ("location")_$C(13,10))
+	. D W("Location: "_HTTPREQ("location")_$C(13,10))
 	I $D(HTTPRSP("auth")) D
-	.  D W("WWW-Authenticate: "_HTTPRSP("auth")_$C(13,10)) K HTTPRSP("auth")
+	. D W("WWW-Authenticate: "_HTTPRSP("auth")_$C(13,10)) K HTTPRSP("auth")
 	I $D(HTTPRSP("header")) d
 	. n tmp s tmp="" f  s tmp=$o(HTTPRSP("header",tmp)) q:tmp=""  D
-	.. d W(tmp_": "_HTTPRSP("header",tmp)_$c(13,10))
+	. . d W(tmp_": "_HTTPRSP("header",tmp)_$c(13,10))
 	. k HTTPRSP("header")
 	I $D(HTTPRSP("mime")) D
 	. D W("Content-Type: "_HTTPRSP("mime")_$C(13,10)) K HTTPRSP("mime")
@@ -287,15 +281,15 @@ SENDATA
 	I RSPTYPE=2 D
 	. I $D(@HTTPRSP)#2 D W(@HTTPRSP)
 	. I $D(@HTTPRSP)>1 S I=0 F  S I=$O(@HTTPRSP@(I)) Q:'I  D
-	.. S IND=@HTTPRSP@(I)
-	.. I $E(IND,1,4)="$NA(" D  Q
-	... S TMP=$P($P(IND,"$NA(",2),")",1,$L(IND,")")-1) I '$D(@TMP) Q
-	... D W(@TMP)
-	.. D W(IND) Q
+	. . S IND=@HTTPRSP@(I)
+	. . I $ZE(IND,1,4)="$NA(" D  Q
+	. . . S TMP=$P($P(IND,"$NA(",2),")",1,$ZL(IND,")")-1) I '$D(@TMP) Q
+	. . . D W(@TMP)
+	. . D W(IND) Q
 	D FLUSH
 	Q
 W(DATA)
-	I ($L(%WBUFF)+$L(DATA))>4080 D FLUSH
+	I ($ZL(%WBUFF)+$ZL(DATA))>4080 D FLUSH
 	S %WBUFF=%WBUFF_DATA
 	Q
 FLUSH
@@ -385,12 +379,12 @@ REFSIZE(ROOT)
 	Q:'$D(ROOT) 0 Q:'$L(ROOT) 0
 	N SIZE,I
 	S SIZE=0
-	I $D(@ROOT)#2 S SIZE=$L(@ROOT)
+	I $D(@ROOT)#2 S SIZE=$ZL(@ROOT)
 	I $D(@ROOT)>1 S I=0 F  S I=$O(@ROOT@(I)) Q:'I  D
-	. I $E(@ROOT@(I),1,4)="$NA(" D  Q
-	.. S TMP=$P($P(@ROOT@(I),"$NA(",2),")",1,$L(@ROOT@(I),")")-1)
-	.. S SIZE=SIZE+$L(@TMP) Q
-	. S SIZE=SIZE+$L(@ROOT@(I))
+	. I $ZE(@ROOT@(I),1,4)="$NA(" D  Q
+	. . S TMP=$P($P(@ROOT@(I),"$NA(",2),")",1,$ZL(@ROOT@(I),")")-1)
+	. . S SIZE=SIZE+$ZL(@TMP) Q
+	. S SIZE=SIZE+$ZL(@ROOT@(I))
 	Q SIZE
 VARSIZE(V)
 	Q:'$D(V) 0
@@ -846,11 +840,11 @@ ENCODE64(X) ;
 	N RGZ,RGZ1,RGZ2,RGZ3,RGZ4,RGZ5,RGZ6
 	S RGZ=$$INIT64,RGZ1=""
 	F RGZ2=1:3:$L(X) D
-	.S RGZ3=0,RGZ6=""
-	.F RGZ4=0:1:2 D
-	..S RGZ5=$A(X,RGZ2+RGZ4),RGZ3=RGZ3*256+$S(RGZ5<0:0,1:RGZ5)
-	.F RGZ4=1:1:4 S RGZ6=$E(RGZ,RGZ3#64+2)_RGZ6,RGZ3=RGZ3\64
-	.S RGZ1=RGZ1_RGZ6
+	. S RGZ3=0,RGZ6=""
+	. F RGZ4=0:1:2 D
+	. . S RGZ5=$A(X,RGZ2+RGZ4),RGZ3=RGZ3*256+$S(RGZ5<0:0,1:RGZ5)
+	. F RGZ4=1:1:4 S RGZ6=$E(RGZ,RGZ3#64+2)_RGZ6,RGZ3=RGZ3\64
+	. S RGZ1=RGZ1_RGZ6
 	S RGZ2=$L(X)#3
 	S:RGZ2 RGZ3=$L(RGZ1),$E(RGZ1,RGZ3-2+RGZ2,RGZ3)=$E("==",RGZ2,2)
 	Q RGZ1
@@ -858,12 +852,12 @@ DECODE64(X) ;
 	N RGZ,RGZ1,RGZ2,RGZ3,RGZ4,RGZ5,RGZ6
 	S RGZ=$$INIT64,RGZ1=""
 	F RGZ2=1:4:$L(X) D
-	.S RGZ3=0,RGZ6=""
-	.F RGZ4=0:1:3 D
-	..S RGZ5=$F(RGZ,$E(X,RGZ2+RGZ4))-3
-	..S RGZ3=RGZ3*64+$S(RGZ5<0:0,1:RGZ5)
-	.F RGZ4=0:1:2 S RGZ6=$C(RGZ3#256)_RGZ6,RGZ3=RGZ3\256
-	.S RGZ1=RGZ1_RGZ6
+	. S RGZ3=0,RGZ6=""
+	. F RGZ4=0:1:3 D
+	. . S RGZ5=$F(RGZ,$E(X,RGZ2+RGZ4))-3
+	. . S RGZ3=RGZ3*64+$S(RGZ5<0:0,1:RGZ5)
+	. F RGZ4=0:1:2 S RGZ6=$C(RGZ3#256)_RGZ6,RGZ3=RGZ3\256
+	. S RGZ1=RGZ1_RGZ6
 	Q $E(RGZ1,1,$L(RGZ1)-$L(X,"=")+1)
 INIT64() Q "=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 		;
@@ -872,6 +866,113 @@ REPLACE(s,f,t)
 	n o,i s o="" f i=1:1:$l(s,f)  s o=o_$s(i<$l(s,f):$p(s,f,i)_t,1:$p(s,f,i))
 	q o
 	;
-	;
-	;
+GetMimeType(EXT)
+	I $G(EXT)="" S EXT="*"
+	S EXT=$$LOW^%YDBUTILS(EXT)
+	I '$D(%YDBWEB(":WS","MIME")) D
+	. S %YDBWEB(":WS","MIME","html")="text/html" 
+	. S %YDBWEB(":WS","MIME","htm")="text/html" 
+	. S %YDBWEB(":WS","MIME","shtml")="text/html"
+	. S %YDBWEB(":WS","MIME","css")="text/css"
+	. S %YDBWEB(":WS","MIME","xml")="text/xml"
+	. S %YDBWEB(":WS","MIME","gif")="image/gif"
+	. S %YDBWEB(":WS","MIME","jpeg")="image/jpeg" 
+	. S %YDBWEB(":WS","MIME","jpg")="image/jpeg"
+	. S %YDBWEB(":WS","MIME","js")="application/javascript"
+	. S %YDBWEB(":WS","MIME","atom")="application/atom+xml"
+	. S %YDBWEB(":WS","MIME","rss")="application/rss+xml"
+	. S %YDBWEB(":WS","MIME","mml")="text/mathml"
+	. S %YDBWEB(":WS","MIME","txt")="text/plain"
+	. S %YDBWEB(":WS","MIME","jad")="text/vnd.sun.j2me.app-descriptor"
+	. S %YDBWEB(":WS","MIME","wml")="text/vnd.wap.wml"
+	. S %YDBWEB(":WS","MIME","htc")="text/x-component"
+	. S %YDBWEB(":WS","MIME","png")="image/png"
+	. S %YDBWEB(":WS","MIME","tif")="image/tiff" 
+	. S %YDBWEB(":WS","MIME","tiff")="image/tiff"
+	. S %YDBWEB(":WS","MIME","wbmp")="image/vnd.wap.wbmp"
+	. S %YDBWEB(":WS","MIME","ico")="image/x-icon"
+	. S %YDBWEB(":WS","MIME","jng")="image/x-jng"
+	. S %YDBWEB(":WS","MIME","bmp")="image/x-ms-bmp"
+	. S %YDBWEB(":WS","MIME","svg")="image/svg+xml"
+	. S %YDBWEB(":WS","MIME","svgz")="image/svg+xml"
+	. S %YDBWEB(":WS","MIME","webp")="image/webp"
+	. S %YDBWEB(":WS","MIME","woff")="application/font-woff"
+	. S %YDBWEB(":WS","MIME","jar")="application/java-archive" 
+	. S %YDBWEB(":WS","MIME","war")="application/java-archive"
+	. S %YDBWEB(":WS","MIME","ear")="application/java-archive"
+	. S %YDBWEB(":WS","MIME","json")="application/json"
+	. S %YDBWEB(":WS","MIME","hqx")="application/mac-binhex40"
+	. S %YDBWEB(":WS","MIME","doc")="application/msword"
+	. S %YDBWEB(":WS","MIME","pdf")="application/pdf"
+	. S %YDBWEB(":WS","MIME","ps")="application/postscript" 
+	. S %YDBWEB(":WS","MIME","eps")="application/postscript" 
+	. S %YDBWEB(":WS","MIME","ai")="application/postscript"
+	. S %YDBWEB(":WS","MIME","rtf")="application/rtf"
+	. S %YDBWEB(":WS","MIME","m3u8")="application/vnd.apple.mpegurl"
+	. S %YDBWEB(":WS","MIME","xls")="application/vnd.ms-excel"
+	. S %YDBWEB(":WS","MIME","eot")="application/vnd.ms-fontobject"
+	. S %YDBWEB(":WS","MIME","ppt")="application/vnd.ms-powerpoint"
+	. S %YDBWEB(":WS","MIME","wmlc")="application/vnd.wap.wmlc"
+	. S %YDBWEB(":WS","MIME","kml")="application/vnd.google-earth.kml+xml"
+	. S %YDBWEB(":WS","MIME","kmz")="application/vnd.google-earth.kmz"
+	. S %YDBWEB(":WS","MIME","7z")="application/x-7z-compressed"
+	. S %YDBWEB(":WS","MIME","cco")="application/x-cocoa"
+	. S %YDBWEB(":WS","MIME","jardiff")="application/x-java-archive-diff"
+	. S %YDBWEB(":WS","MIME","jnlp")="application/x-java-jnlp-file"
+	. S %YDBWEB(":WS","MIME","run")="application/x-makeself"
+	. S %YDBWEB(":WS","MIME","pl")="application/x-perl"
+	. S %YDBWEB(":WS","MIME","pm")="application/x-perl"
+	. S %YDBWEB(":WS","MIME","prc")="application/x-pilot" 
+	. S %YDBWEB(":WS","MIME","pdb")="application/x-pilot"
+	. S %YDBWEB(":WS","MIME","rar")="application/x-rar-compressed"
+	. S %YDBWEB(":WS","MIME","rpm")="application/x-redhat-package-manager"
+	. S %YDBWEB(":WS","MIME","sea")="application/x-sea"
+	. S %YDBWEB(":WS","MIME","swf")="application/x-shockwave-flash"
+	. S %YDBWEB(":WS","MIME","sit")="application/x-stuffit"
+	. S %YDBWEB(":WS","MIME","tcl")="application/x-tcl"
+	. S %YDBWEB(":WS","MIME","tk")="application/x-tcl"
+	. S %YDBWEB(":WS","MIME","der")="application/x-x509-ca-cert"
+	. S %YDBWEB(":WS","MIME","pem")="application/x-x509-ca-cert"
+	. S %YDBWEB(":WS","MIME","crt")="application/x-x509-ca-cert"
+	. S %YDBWEB(":WS","MIME","xpi")="application/x-xpinstall"
+	. S %YDBWEB(":WS","MIME","xhtml")="application/xhtml+xml"
+	. S %YDBWEB(":WS","MIME","xspf")="application/xspf+xml"
+	. S %YDBWEB(":WS","MIME","zip")="application/zip"
+	. S %YDBWEB(":WS","MIME","bin")="application/octet-stream" 
+	. S %YDBWEB(":WS","MIME","exe")="application/octet-stream" 
+	. S %YDBWEB(":WS","MIME","dll")="application/octet-stream"
+	. S %YDBWEB(":WS","MIME","deb")="application/octet-stream"
+	. S %YDBWEB(":WS","MIME","dmg")="application/octet-stream"
+	. S %YDBWEB(":WS","MIME","iso")="application/octet-stream"
+	. S %YDBWEB(":WS","MIME","img")="application/octet-stream"
+	. S %YDBWEB(":WS","MIME","msi")="application/octet-stream"
+	. S %YDBWEB(":WS","MIME","msp")="application/octet-stream"
+	. S %YDBWEB(":WS","MIME","msm")="application/octet-stream"
+	. S %YDBWEB(":WS","MIME","docx")="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+	. S %YDBWEB(":WS","MIME","xlsx")="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+	. S %YDBWEB(":WS","MIME","pptx")="application/vnd.openxmlformats-officedocument.presentationml.presentation"
+	. S %YDBWEB(":WS","MIME","mid")="audio/midi"
+	. S %YDBWEB(":WS","MIME","midi")="audio/midi"
+	. S %YDBWEB(":WS","MIME","kar")="audio/midi"
+	. S %YDBWEB(":WS","MIME","mp3")="audio/mpeg"
+	. S %YDBWEB(":WS","MIME","ogg")="audio/ogg"
+	. S %YDBWEB(":WS","MIME","m4a")="audio/x-m4a"
+	. S %YDBWEB(":WS","MIME","ra")="audio/x-realaudio"
+	. S %YDBWEB(":WS","MIME","3gpp")="video/3gpp"
+	. S %YDBWEB(":WS","MIME","3gp")="video/3gpp"
+	. S %YDBWEB(":WS","MIME","ts")="video/mp2t"
+	. S %YDBWEB(":WS","MIME","mp4")="video/mp4"
+	. S %YDBWEB(":WS","MIME","mpeg")="video/mpeg"
+	. S %YDBWEB(":WS","MIME","mpg")="video/mpeg"
+	. S %YDBWEB(":WS","MIME","mov")="video/quicktime"
+	. S %YDBWEB(":WS","MIME","webm")="video/webm"
+	. S %YDBWEB(":WS","MIME","flv")="video/x-flv"
+	. S %YDBWEB(":WS","MIME","m4v")="video/x-m4v"
+	. S %YDBWEB(":WS","MIME","mng")="video/x-mng"
+	. S %YDBWEB(":WS","MIME","asx")="video/x-ms-asf"
+	. S %YDBWEB(":WS","MIME","asf")="video/x-ms-asf"
+	. S %YDBWEB(":WS","MIME","wmv")="video/x-ms-wmv"
+	. S %YDBWEB(":WS","MIME","avi")="video/x-msvideo"
+	I $D(%YDBWEB(":WS","MIME",EXT)) Q %YDBWEB(":WS","MIME",EXT)
+	E  Q "application/octet-stream"
 	;

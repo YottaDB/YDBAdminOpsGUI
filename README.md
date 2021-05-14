@@ -52,9 +52,33 @@ npm install
 ```
 - Run the front-end development server
 ```bash
-quasar dev
-# if the command fails, you might need to point to the executable directly
-./node_modules/@quasar/app/bin/quasar dev
-
+npm run dev
 ```
 - Navigate to http://localhost:8080. If port 8080 is unavailable, ```quasar``` will use the closest available port.  Quasar will also report on the port being used whether it's 8080 or any other chosen available port 
+
+
+#### Running the app in production mode.
+- Make sure you build the application
+ ```bash
+ npm run build
+ ```
+- Start the web server using default port (8089)
+```bash
+$ydb_dist/yottadb -run Start^%YDBWEB
+```
+- Or provide a specific port (7777 for example)
+```bash
+$ydb_dist/yottadb -run Start^%YDBWEB(7777)
+```
+- Point your browser to the running application
+```bash
+http://localhost:8089
+```
+##### Notes
+- ydb_routines variable needs to be set correctly to point to the routines of the application. You can either move the routines manually to a location specified in ydb_routines, 
+or you can modify ydb_routines before YottaDB process start up
+```bash
+export ydb_routines=`$ydb_dist/yottadb -run %XCMD 'W $P($P($ZRO,"(",1,2),")")_" "_"$PWD/routines"_")"_$P($ZRO,")",2,$L($ZRO,")"))'` 
+```
+- The instance of the web server has to be started from the project root folder, where the folder ./dist/spa/ contains the project's built files. 
+

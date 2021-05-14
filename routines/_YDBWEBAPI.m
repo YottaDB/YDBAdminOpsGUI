@@ -25,15 +25,31 @@ API(%Q,%R,%A)
 	N (%RR,%J,%WTCP,%ROUTINE,%Q,%R,%A,%YDBWEBRESP)
 	D @(%ROUTINE_"(.%RR,.%J)")
 	K @%R D ENCODE^%YDBWEB("%J",%R)
-	U %WTCP
 	Q
 	;
+SERVESTATIC(%Q,%R,%A)	
+	N PATH S PATH=$G(%Q("path")) 
+	I PATH="" S PATH="/YottaDB/index.html"
+	I PATH="/" S PATH="/YottaDB/index.html"
+	I PATH="/YottaDB" S PATH="/YottaDB/index.html"
+	I PATH="/YottaDB/" S PATH="/YottaDB/index.html"
+	I $E(PATH,1,9)'="/YottaDB/" D SETERROR^%YDBWEB(404) Q
+	N FILEPATHS
+	S FILEPATH="dist/spa/"_$E(PATH,10,$L(PATH))
+	I $P(FILEPATH,".",$L(FILEPATH,"."))["?" D
+	. S $P(FILEPATH,".",$L(FILEPATH,"."))=$P($P(FILEPATH,".",$L(FILEPATH,".")),"?")
+	I '$$FileExists^%YDBUTILS(FILEPATH) D
+	. S FILEPATH="dist/spa/index.html"
+	N EXT S EXT=$P(FILEPATH,".",$L(FILEPATH,"."))
+	S %R("mime")=$$GetMimeType^%YDBWEB(EXT)
+	N OUTPUT
+	D ReadFileByChunk^%YDBUTILS(FILEPATH,4080,.OUTPUT)
+	M @%R=OUTPUT
+	Q
+	;	
 PING(I,O)
 	S O("data","RESULT")="PONG"
 	Q
 	;
 ERR ;
-	S @R@("ERROR")=$ZSTATUS
 	Q
-	;
-	;
