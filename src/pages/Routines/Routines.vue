@@ -61,6 +61,7 @@
         <q-breadcrumbs-el label="System Explorer" />
         <q-breadcrumbs-el label="Routines" />
         <q-breadcrumbs-el
+         v-if="tabData && tabData[tab] && tabData[tab].path"
           :label="tabData[tab].path + tabData[tab].name ? tabData[tab].path + tabData[tab].name + '.m' : ''"
         />
       </q-breadcrumbs>
@@ -296,7 +297,7 @@ export default {
       newRoutineName: "",
       createRoutineDialog: false,
       splitterModel: 10,
-      searchRoutines: "%YDB*",
+      searchRoutines: "*",
       shownRoutineList: [],
       shownRoutineIndex: 0,
       routinePatchCount: 100,
@@ -680,8 +681,6 @@ export default {
       this.splitterModel =
         this.$q.localStorage.getItem("ydb-routines-splitter") || 15;
     }
-  },
-  async mounted() {
     await this.getRoutines();
     if (this.shownRoutineList[0]) {
       this.populateRoutine(this.shownRoutineList[0]);
