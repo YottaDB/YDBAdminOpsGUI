@@ -11,10 +11,8 @@
 	;#                                                               #
 	;#################################################################		
 	Q
-get(HTTPREQ,HTTPRSP,HTTPARGS) ;
-	S HTTPRSP("header","Access-Control-Allow-Origin")="*"
-	S HTTPRSP("header","Access-Control-Allow-Headers")="Origin, X-Requested-With, Content-Type, Accept"
-	n JSON,ERR,gdequiet,gdeweberror,gdewebquit
+get(JSON,result) ;
+	n ERR,gdequiet,gdeweberror,gdewebquit
 	n useio,io
 	;
 	; GDE variables in the stack
@@ -35,7 +33,6 @@ get(HTTPREQ,HTTPRSP,HTTPARGS) ;
 	s useio="io"
 	d setup
 	;
-	n result
 	;
 	; Names
 	;
@@ -47,158 +44,49 @@ get(HTTPREQ,HTTPRSP,HTTPARGS) ;
 	d onemap("...",s2)
 	s index=index+1
 	i $d(nams("#")) s s2="LOCAL LOCKS",map(s2)=nams("#") d onemap("",s2) k map(s2)
-	m result("names")=nams
-	zk result("names")
-	m result("map")=map2
-	m result("globalNames")=gnams
-	zk result("globalNames")
+	m result("data","names")=nams
+	zk result("data","names")
+	m result("data","map")=map2
+	m result("data","globalNames")=gnams
+	zk result("data","globalNames")
 	;
 	; Regions
 	;
-	m result("regions")=regs
-	zk result("regions")
+	m result("data","regions")=regs
+	zk result("data","regions")
 	; minreg/maxreg are limits from INITGDE
 	; probably not needed
-	;merge result("minreg")=minreg
-	;merge result("maxreg")=maxreg
+	;merge result("data","minreg")=minreg
+	;merge result("data","maxreg")=maxreg
 	;
 	; Segments
 	;
-	m result("segments")=segs
-	zk result("segments")
+	m result("data","segments")=segs
+	zk result("data","segments")
 	; minseg/maxseg are limits from INITGDE
 	; probably not needed
-	;merge result("minseg")=minseg
-	;merge result("maxseg")=maxseg
+	;merge result("data","minseg")=minseg
+	;merge result("data","maxseg")=maxseg
 	;
 	; Templates
 	;
-	m result("template","accessMethod")=tmpacc
-	m result("template","segment")=tmpseg
-	zk result("template","segment","BG")
-	zk result("template","segment","MM")
-	m result("template","region")=tmpreg
+	m result("data","template","accessMethod")=tmpacc
+	m result("data","template","segment")=tmpseg
+	zk result("data","template","segment","BG")
+	zk result("data","template","segment","MM")
+	m result("data","template","region")=tmpreg
 	;
 	; Access Methods
 	n i
-	f i=2:1:$l(accmeth,"\") s result("accessMethods",i-1)=$zpi(accmeth,"\",i)
+	f i=2:1:$l(accmeth,"\") s result("data","accessMethods",i-1)=$zpi(accmeth,"\",i)
 	;
 	; convert to booleans
 	d inttobool(.result)
-	; encode the result
-	d ENCODE^%YDBWEB("result",HTTPRSP,"ERR")
 	q
-	;
-	; Delete given global directory element(s)
-	;
-	; @param {Array} ARGS - Passed by reference. Unused variable, used only to conform to interface specification for web server
-	; @param {Array/Object} BODY - Passed by reference. JSON array or object that describes the global directory element to delete
-	; @param {Array} RESULT - Passed by reference. JSON object that contains errors, verification state, and the resulting global
-	;                         directory after the deletion
-	; @returns {String} - Empty string unless an error occurs. Errors are found in ^TMP($J)
-	;
-	; @example
-	; s BODY="{""name"":{""NAME"":""ZZYOTTADB1""},""region"":{""REGION"":""ZZYOTTADB""},""segment"":{""SEGMENT"":""ZZYOTTADB""}}"
-	; s STATUS=$$delete^GDEWEB(.ARGS,.BODY,.RESULT)
-	;
-delete(HTTPREQ,HTTPRSP,HTTPARGS)
-	S HTTPRSP("header","Access-Control-Allow-Origin")="*"
-	S HTTPRSP("header","Access-Control-Allow-Headers")="Origin, X-Requested-With, Content-Type, Accept"
-	n JSON,ERR,gdequiet,gdeweberror,gdewebquit
-	n useio,io
-	;
-	; GDE variables in the stack
-	n BOL,FALSE,HEX,MAXGVSUBS,MAXGVSUBS,MAXNAMLN,MAXREGLN,MAXSEGLN,MAXSTRLEN
-	n ONE,PARNAMLN,PARREGLN,PARSEGLN,SIZEOF,TAB,TRUE,TWO,ZERO,accmeth,am,bs
-	n chset,combase,comlevel,comline,create,dbfilpar,defdb,defgld,defgldext
-	n defglo,defreg,defseg,dflreg,encsupportedplat,endian,f,file,filesize
-	n filexfm,gdeerr,glo,gnams,gtm64,hdrlab,helpfile,i,inst,killed,ks,l,label
-	n len,log,logfile,lower,mach,matchLen,maxgnam,maxinst,maxreg,maxseg,mingnam
-	n minreg,minseg,nams,nommbi,olabel,quitLoop,rec,reghasv550fields
-	n reghasv600fields,regs,renpref,resume,s,seghasencrflag,segs,sep,syntab
-	n tfile,tmpacc,tmpreg,tmpseg,tokens,typevalue,update,upper,v30,v44,v532
-	n v533,v534,v542,v550,v5ft1,v600,v621,v631,v63a,ver,x,y,map,map2,mapdisp,s1,s2,l1,j
-	n attr,filetype,gdeputzs,gdexcept,maxs,record,ref,sreg,tempfile
-	;
-	i (($d(@HTTPREQ("body"))=0)!($d(@HTTPREQ("body"))=1))&($g(@HTTPREQ("body"))="") Q 
-	d DECODE^%YDBWEB(HTTPREQ("body"),"JSON","ERR")
-	;
-	; setup required variables
-	s gdequiet=1
-	s io=$io
-	s useio="io"
-	d setup
-	;
-	n NAME,REGION,SEGMENT,RSLT,getMapData,verifyStatus,next,x,debug
-	s debug=""
-	;
-	; delete the object we've been given from the global directory
-	i $d(JSON(1)) d
-	. n i,item
-	. s i=0
-	. f  s i=$o(JSON(i)) q:i=""  d
-	. . k item
-	. . m item=JSON(i)
-	. . d deleteone(.item)
-	e  d deleteone(.JSON)
-	; Perform verification
-	i '$d(gdeweberror),$$ALL^GDEVERIF,$$GDEPUT^GDEPUT d  I 1
-	. s verifyStatus="true"
-	; We didn't pass validation OR couldn't save the global directory
-	e  s verifyStatus="false",getMapData="" ; null value instead of empty string for getMapData?
-	;
-	; Prepare result
-	s RSLT("verifyStatus")=verifyStatus
-	m RSLT("getMapData")=getMapData
-	m RSLT("errors")=gdeweberror
-	d ENCODE^%YDBWEB("RSLT",HTTPRSP,"ERR")
-	quit
-	;
-	; Internal line tag for delete line tag that deletes a single item from the global directory. ;
-	; This requires a verification and put to save the changes to the global directory. ;
-	;
-	; @param {Array} JSON - Passed by reference. Contains an array structure for a single entry to be deleted from the global directory
-	;
-	; @example
-	; d deleteone^GDEWEB("{""name"":{""NAME"":""XTMP""}")
-	;
-deleteone(JSON)
-	i $d(JSON("name")) d
-	. i $g(JSON("name","NAME"))="#" s gdeweberror($i(gdeweberror("count")))="Can't delete 'Local Locks' name" q
-	. s NAME=$g(JSON("name","NAME"))
-	. d NAME^GDEDELET
-	i $d(JSON("region")) d
-	. s REGION=$tr($g(JSON("region","REGION")),lower,upper)
-	. d REGION^GDEDELET
-	i $d(JSON("segment")) d
-	. s SEGMENT=$tr($g(JSON("segment","SEGMENT")),lower,upper)
-	. d SEGMENT^GDEDELET
-	quit
-	;
-	; Save a given global directory
-	;
-	; @param {Array} ARGS - Passed by reference. Unused variable, used only to conform to interface specification for web server
-	; @param {Array/Object} BODY - Passed by reference. JSON object that describes the global directory entries to save
-	; @param {Array} RESULT - Passed by reference. JSON object that contains errors, verification state, and the resulting global
-	;                         directory after the operation
-	; @returns {String} - Empty string unless an error occurs. Errors are found in ^TMP($J)
-	;
-	; @example
-	; s BODY="{""names"":{""ZZYOTTADB2(1:3)"":""TEMP""}}"
-	; s STATUS=$$save^GDEWEB(.ARGS,.BODY,.RESULT)
-	;
-DEBUG
-	M ^HTTPREQ=^A
-	S HTTPREQ("body")="%AAA"
-	M %AAA=^B
-	D save(.HTTPREQ,.HTTPRSP,"")
-	Q
 	;	
 	;
-save(HTTPREQ,HTTPRSP,HTTPARGS)
-	S HTTPRSP("header","Access-Control-Allow-Origin")="*"
-	S HTTPRSP("header","Access-Control-Allow-Headers")="Origin, X-Requested-With, Content-Type, Accept"
-	n JSON,ERR,gdequiet,gdeweberror,gdewebquit
+save(JSON,result)
+	n ERR,gdequiet,gdeweberror,gdewebquit
 	n useio,io
 	;
 	; GDE variables in the stack
@@ -214,16 +102,13 @@ save(HTTPREQ,HTTPRSP,HTTPARGS)
 	n v533,v534,v542,v550,v5ft1,v600,v621,v631,v63a,ver,x,y,map,map2,mapdisp,s1,s2,l1,j
 	n attr,filetype,gdeputzs,gdexcept,maxs,record,ref,sreg,tempfile
 	;
-	i (($d(@HTTPREQ("body"))=0)!($d(@HTTPREQ("body"))=1))&($g(@HTTPREQ("body"))="") Q
-	d DECODE^%YDBWEB(HTTPREQ("body"),"JSON","ERR")
-	;
 	; setup required variables
 	s gdequiet=1
 	s io=$io
 	s useio="io"
 	d setup
 	;
-	n verifyStatus,x,region,segment,namPlusCaret,reg,next,debug,NAME,result,getMapData
+	n verifyStatus,x,region,segment,namPlusCaret,reg,next,debug,NAME,getMapData
 	n uname
 	s debug=""
 	;
@@ -233,13 +118,13 @@ save(HTTPREQ,HTTPRSP,HTTPARGS)
 	; Delete items from the global directory
 	n i,item
 	s i=0
-	f  s i=$o(JSON("deletedItems",i)) q:i=""  d
+	f  s i=$o(JSON("data","deletedItems",i)) q:i=""  d
 	. k item
-	. m item=JSON("deletedItems",i)
+	. m item=JSON("data","deletedItems",i)
 	. d deleteone(.item)
 	;
 	; Names:
-	m nams=JSON("names")
+	m nams=JSON("data","names")
 	s x="" f  s x=$o(nams(x)) q:x=""  d
 	. k region,NAME
 	. s region=nams(x)
@@ -248,39 +133,39 @@ save(HTTPREQ,HTTPRSP,HTTPARGS)
 	. s nams(x)=region
 	;
 	; Global Names:
-	m gnams=JSON("globalNames")
+	m gnams=JSON("data","globalNames")
 	;
 	; Regions:
-	s x="" f  s x=$o(JSON("regions",x)) q:x=""  d
+	s x="" f  s x=$o(JSON("data","regions",x)) q:x=""  d
 	. m regs(x)=tmpreg
 	. ; remove items that are invalid
-	. k JSON("regions",x,"NAME")
-	. s attr="" f  s attr=$o(JSON("regions",x,attr)) q:attr=""  d
-	. . i '$l($g(JSON("regions",x,attr))) k JSON("regions",x,attr)
+	. k JSON("data","regions",x,"NAME")
+	. s attr="" f  s attr=$o(JSON("data","regions",x,attr)) q:attr=""  d
+	. . i '$l($g(JSON("data","regions",x,attr))) k JSON("data","regions",x,attr)
 	. ; Now merge the the incoming region
-	. m regs($tr(x,lower,upper))=JSON("regions",x)
+	. m regs($tr(x,lower,upper))=JSON("data","regions",x)
 	. ; uppercase the dynamic segment
 	. s regs($tr(x,lower,upper),"DYNAMIC_SEGMENT")=$tr(regs($tr(x,lower,upper),"DYNAMIC_SEGMENT"),lower,upper)
 	;
 	; Segments:
-	s x="" f  s x=$o(JSON("segments",x)) q:x=""  d
-	. i ($l($g(JSON("segments",x,"ACCESS_METHOD")))),($d(tmpseg(JSON("segments",x,"ACCESS_METHOD")))) m segs(x)=tmpseg(JSON("segments",x,"ACCESS_METHOD"))
+	s x="" f  s x=$o(JSON("data","segments",x)) q:x=""  d
+	. i ($l($g(JSON("data","segments",x,"ACCESS_METHOD")))),($d(tmpseg(JSON("data","segments",x,"ACCESS_METHOD")))) m segs(x)=tmpseg(JSON("data","segments",x,"ACCESS_METHOD"))
 	. e  d message^GDE(gdeerr("QUALREQD"),"""Access method""")
 	. ; remove items that are invalid
-	. k JSON("segments",x,"NAME")
-	. s attr="" f  s attr=$o(JSON("segments",x,attr)) q:attr=""  d
-	. . i '$l($g(JSON("segments",x,attr))) k JSON("segments",x,attr)
+	. k JSON("data","segments",x,"NAME")
+	. s attr="" f  s attr=$o(JSON("data","segments",x,attr)) q:attr=""  d
+	. . i '$l($g(JSON("data","segments",x,attr))) k JSON("data","segments",x,attr)
 	. ; Now merge the incoming segment
-	. m segs($tr(x,lower,upper))=JSON("segments",x)
+	. m segs($tr(x,lower,upper))=JSON("data","segments",x)
 	;
 	; Template Access Methods:
-	m tmpacc=JSON("template","accessMethod")
+	m tmpacc=JSON("data","template","accessMethod")
 	;
 	; Template Region:
-	m tmpreg=JSON("template","region")
+	m tmpreg=JSON("data","template","region")
 	;
 	; Template Segment:
-	m tmpseg=JSON("template","segment")
+	m tmpseg=JSON("data","template","segment")
 	;
 	; Perform verification
 	i ('$d(gdeweberror)),$$ALL^GDEVERIF,$$GDEPUT^GDEPUT d
@@ -289,27 +174,12 @@ save(HTTPREQ,HTTPRSP,HTTPARGS)
 	e  s verifyStatus="false" ; null value instead of empty string for getMapData?
 	;
 	; Prepare result
-	s result("verifyStatus")=verifyStatus
-	m result("errors")=gdeweberror
-	d ENCODE^%YDBWEB("result",HTTPRSP,"ERR")
-	quit
+	s result("data","verifyStatus")=verifyStatus
+	m result("data","errors")=gdeweberror
+	q
 	;
-	; Verify a given global directory
-	;
-	; @param {Array} ARGS - Passed by reference. Unused variable, used only to conform to interface specification for web server
-	; @param {Array/Object} BODY - Passed by reference. JSON object that describes the global directory to verify
-	; @param {Array} RESULT - Passed by reference. JSON object that contains errors, verification state, and the resulting global
-	;                         directory
-	; @returns {String} - Empty string unless an error occurs. Errors are found in ^TMP($J)
-	;
-	; @example
-	; s BODY="{""names"":{""ZZTEST"":""TEMP""}}"
-	; s STATUS=$$verify^GDEWEB(.ARGS,.BODY,.RESULT)
-	;
-verify(HTTPREQ,HTTPRSP,HTTPARGS)
-	S HTTPRSP("header","Access-Control-Allow-Origin")="*"
-	S HTTPRSP("header","Access-Control-Allow-Headers")="Origin, X-Requested-With, Content-Type, Accept"
-	n JSON,ERR,gdequiet,gdeweberror,gdewebquit
+verify(JSON,RSLT)
+	n ERR,gdequiet,gdeweberror,gdewebquit
 	n useio,io
 	;
 	; GDE variables in the stack
@@ -324,51 +194,49 @@ verify(HTTPREQ,HTTPRSP,HTTPARGS)
 	n tfile,tmpacc,tmpreg,tmpseg,tokens,typevalue,update,upper,v30,v44,v532
 	n v533,v534,v542,v550,v5ft1,v600,v621,v631,v63a,ver,x,y,map,map2,mapdisp,s1,s2,l1,j
 	;
-	i (($d(@HTTPREQ("body"))=0)!($d(@HTTPREQ("body"))=1))&($g(@HTTPREQ("body"))="") Q
-	d DECODE^%YDBWEB(HTTPREQ("body"),"JSON","ERR")
 	;
 	; setup required variables
 	s gdequiet=1
 	s io=$io
 	s useio="io"
 	d setup
-	n NAME,RSLT,region,attr,temp,SEGMENT,REGION
+	n NAME,region,attr,temp,SEGMENT,REGION
 	;
 	; Convert boolean to integer
 	d booltoint(.JSON)
 	;
 	; Names:
-	s x="" f  s x=$o(JSON("names",x)) q:x=""  d
+	s x="" f  s x=$o(JSON("data","names",x)) q:x=""  d
 	. ; Skip any nodes from JSON decoding
 	. i x="\s" q
 	. ; From GDEPARSE
 	. ; relevant code from GDEPARSE is in createnamearray. ;
 	. ; End from GDEPARSE
 	. ; From GDEADD
-	. i '$l($g(JSON("names",x)))  d message^GDE(gdeerr("QUALREQD"),"""Region""") q
+	. i '$l($g(JSON("data","names",x)))  d message^GDE(gdeerr("QUALREQD"),"""Region""") q
 	. ; End from GDEADD
 	. k region,NAME
 	. ; save off region as it gets re-written by createname array
-	. s region=JSON("names",x)
+	. s region=JSON("data","names",x)
 	. d:(x'="#")&(x'="*") createnamearray(x)
-	. m JSON("names",x)=NAME
-	. s JSON("names",x)=region
+	. m JSON("data","names",x)=NAME
+	. s JSON("data","names",x)=region
 	. ; Now merge the the incoming name
-	. m nams(x)=JSON("names",x)
+	. m nams(x)=JSON("data","names",x)
 	. ; Now kill it so we don't loop over it
-	. k JSON("names",x)
+	. k JSON("data","names",x)
 	;
 	; Global Names:
-	m gnams=JSON("globalNames")
+	m gnams=JSON("data","globalNames")
 	;
 	; Regions:
-	s REGION="" f  s REGION=$o(JSON("regions",REGION)) q:REGION=""  d
+	s REGION="" f  s REGION=$o(JSON("data","regions",REGION)) q:REGION=""  d
 	. ; From GDEPARSE
 	. ; make uppercase
 	. k temp
-	. m temp($tr(REGION,lower,upper))=JSON("regions",REGION)
-	. k JSON("regions",REGION)
-	. m JSON("regions",$tr(REGION,lower,upper))=temp($tr(REGION,lower,upper))
+	. m temp($tr(REGION,lower,upper))=JSON("data","regions",REGION)
+	. k JSON("data","regions",REGION)
+	. m JSON("data","regions",$tr(REGION,lower,upper))=temp($tr(REGION,lower,upper))
 	. s REGION=$tr(REGION,lower,upper)
 	. i '$zl(REGION) d message^GDE(gdeerr("VALUEBAD"),$zwrite(REGION)_":"""_renpref_"region""") q
 	. i $l(REGION)'=$zl(REGION) d message^GDE(gdeerr("NONASCII"),$zwrite(REGION)_":""region""")	q ; error if the name of the region is non-ascii
@@ -378,26 +246,26 @@ verify(HTTPREQ,HTTPRSP,HTTPARGS)
 	. i $zl(REGION)>PARREGLN d message^GDE(gdeerr("VALTOOLONG"),$zwrite(REGION)_":"""_PARREGLN_""":"""_renpref_"region""") q
 	. ; End from GDEPARSE
 	. ; From GDEADD
-	. i '$d(JSON("regions",REGION,"DYNAMIC_SEGMENT")) d message^GDE(gdeerr("QUALREQD"),"""Dynamic_segment""") q
+	. i '$d(JSON("data","regions",REGION,"DYNAMIC_SEGMENT")) d message^GDE(gdeerr("QUALREQD"),"""Dynamic_segment""") q
 	. ; End from GDEADD
 	. m regs(REGION)=tmpreg
 	. ; remove items that are invalid
-	. k JSON("regions",REGION,"NAME")
-	. s attr="" f  s attr=$o(JSON("regions",REGION,attr)) q:attr=""  d
-	. . i '$l($g(JSON("regions",REGION,attr))) k JSON("regions",REGION,attr)
+	. k JSON("data","regions",REGION,"NAME")
+	. s attr="" f  s attr=$o(JSON("data","regions",REGION,attr)) q:attr=""  d
+	. . i '$l($g(JSON("data","regions",REGION,attr))) k JSON("data","regions",REGION,attr)
 	. ; Now merge the the incoming region
-	. m regs($tr(REGION,lower,upper))=JSON("regions",REGION)
+	. m regs($tr(REGION,lower,upper))=JSON("data","data","regions",REGION)
 	. ; uppercase the dynamic segment
 	. s regs($tr(REGION,lower,upper),"DYNAMIC_SEGMENT")=$tr(regs($tr(REGION,lower,upper),"DYNAMIC_SEGMENT"),lower,upper)
 	;
 	; Segments:
-	s SEGMENT="" f  s SEGMENT=$o(JSON("segments",SEGMENT)) q:SEGMENT=""  d
+	s SEGMENT="" f  s SEGMENT=$o(JSON("data","segments",SEGMENT)) q:SEGMENT=""  d
 	. ; From GDEPARSE
 	. ; make uppercase
 	. k temp
-	. m temp($tr(SEGMENT,lower,upper))=JSON("segments",SEGMENT)
-	. k JSON("segments",SEGMENT)
-	. m JSON("segments",$tr(SEGMENT,lower,upper))=temp($tr(SEGMENT,lower,upper))
+	. m temp($tr(SEGMENT,lower,upper))=JSON("data","segments",SEGMENT)
+	. k JSON("data","segments",SEGMENT)
+	. m JSON("data","segments",$tr(SEGMENT,lower,upper))=temp($tr(SEGMENT,lower,upper))
 	. s SEGMENT=$tr(SEGMENT,lower,upper)
 	. ;
 	. i '$zl(SEGMENT) d message^GDE(gdeerr("VALUEBAD"),$zwrite(SEGMENT)_":"""_renpref_"segment""") q
@@ -408,33 +276,32 @@ verify(HTTPREQ,HTTPRSP,HTTPARGS)
 	. i $zl(SEGMENT)>PARSEGLN d message^GDE(gdeerr("VALTOOLONG"),$zwrite(SEGMENT)_":"""_PARSEGLN_""":"""_renpref_"segment""") q
 	. ; End from GDEPARSE
 	. ; From GDEADD
-	. i '$d(JSON("segments",SEGMENT,"FILE_NAME")) d message^GDE(gdeerr("QUALREQD"),"""File""") q
-	. i $g(JSON("segments",SEGMENT,"FILE_NAME"))="" d message^GDE(gdeerr("QUALREQD"),"""File""") q
+	. i '$d(JSON("data","segments",SEGMENT,"FILE_NAME")) d message^GDE(gdeerr("QUALREQD"),"""File""") q
+	. i $g(JSON("data","segments",SEGMENT,"FILE_NAME"))="" d message^GDE(gdeerr("QUALREQD"),"""File""") q
 	. ; End from GDEADD
-	. i ($l($g(JSON("segments",SEGMENT,"ACCESS_METHOD")))),($d(tmpseg(JSON("segments",SEGMENT,"ACCESS_METHOD")))) m segs(SEGMENT)=tmpseg(JSON("segments",SEGMENT,"ACCESS_METHOD"))
+	. i ($l($g(JSON("data","segments",SEGMENT,"ACCESS_METHOD")))),($d(tmpseg(JSON("data","segments",SEGMENT,"ACCESS_METHOD")))) m segs(SEGMENT)=tmpseg(JSON("data","segments",SEGMENT,"ACCESS_METHOD"))
 	. e  d message^GDE(gdeerr("QUALREQD"),"""Access method""")
 	. ; remove items that are invalid
-	. k JSON("segments",SEGMENT,"NAME")
-	. s attr="" f  s attr=$o(JSON("segments",SEGMENT,attr)) q:attr=""  d
-	. . i '$l($g(JSON("segments",SEGMENT,attr))) k JSON("segments",SEGMENT,attr)
+	. k JSON("data","segments",SEGMENT,"NAME")
+	. s attr="" f  s attr=$o(JSON("data","segments",SEGMENT,attr)) q:attr=""  d
+	. . i '$l($g(JSON("data","segments",SEGMENT,attr))) k JSON("data","segments",SEGMENT,attr)
 	. ; Now merge the incoming segment
-	. m segs($tr(SEGMENT,lower,upper))=JSON("segments",SEGMENT)
+	. m segs($tr(SEGMENT,lower,upper))=JSON("data","segments",SEGMENT)
 	;
 	; Template Access Methods:
-	m tmpacc=JSON("template","accessMethod")
+	m tmpacc=JSON("data","template","accessMethod")
 	;
 	; Template Region:
-	m tmpreg=JSON("template","region")
+	m tmpreg=JSON("data","template","region")
 	;
 	; Template Segment:
-	m tmpseg=JSON("template","segment")
+	m tmpseg=JSON("data","template","segment")
 	;
 	; Now verify it!
-	i ('$g(gdewebquit))&($$ALL^GDEVERIF) s RSLT("verifyStatus")="true"
-	e  s RSLT("verifyStatus")="false"
-	m RSLT("errors")=gdeweberror
-	d ENCODE^%YDBWEB("RSLT",HTTPRSP,"ERR")
-	quit
+	i ('$g(gdewebquit))&($$ALL^GDEVERIF) s RSLT("data","verifyStatus")="true"
+	e  s RSLT("data","verifyStatus")="false"
+	m RSLT("data","errors")=gdeweberror
+	q
 	;
 	; =========================================================================
 	; Common functions
@@ -488,14 +355,14 @@ setup
 booltoint(object)
 	n REGION,SEGMENT,ITEM
 	; There is nothing in names that would need to be converted
-	s REGION="" f  s REGION=$o(object("regions",REGION)) q:REGION=""  d
+	s REGION="" f  s REGION=$o(object("data","regions",REGION)) q:REGION=""  d
 	. s ITEM="" f ITEM="NULL_SUBSCRIPTS","STDNULLCOLL","JOURNAL","INST_FREEZE_ON_ERROR","QDBRUNDOWN","EPOCHTAPER","AUTODB","STATS","LOCK_CRIT_SEPARATE","BEFORE_IMAGE" d
-	. . i $g(object("regions",REGION,ITEM))="true" s object("regions",REGION,ITEM)=1
-	. . e  i $g(object("regions",REGION,ITEM))="false" s object("regions",REGION,ITEM)=0
-	s SEGMENT="" f  s SEGMENT=$o(object("segments",SEGMENT)) q:SEGMENT=""  d
+	. . i $g(object("data","regions",REGION,ITEM))="true" s object("data","regions",REGION,ITEM)=1
+	. . e  i $g(object("data","regions",REGION,ITEM))="false" s object("data","regions",REGION,ITEM)=0
+	s SEGMENT="" f  s SEGMENT=$o(object("data","segments",SEGMENT)) q:SEGMENT=""  d
 	. s ITEM="" f ITEM="ENCRYPTION_FLAG","DEFER_ALLOCATE","ASYNCIO" d
-	. . i $g(object("segments",SEGMENT,ITEM))="true" s object("segments",SEGMENT,ITEM)=1
-	. . e  i $g(object("segments",SEGMENT,ITEM))="false" s object("segments",SEGMENT,ITEM)=0
+	. . i $g(object("data","segments",SEGMENT,ITEM))="true" s object("data","segments",SEGMENT,ITEM)=1
+	. . e  i $g(object("data","segments",SEGMENT,ITEM))="false" s object("data","segments",SEGMENT,ITEM)=0
 	quit
 	;
 	; This converts object properties from integer 1/0 to boolean true/false
@@ -504,14 +371,14 @@ booltoint(object)
 inttobool(object)
 	n REGION,SEGMENT,ITEM
 	; There is nothing in names that would need to be converted
-	s REGION="" f  s REGION=$o(object("regions",REGION)) q:REGION=""  d
+	s REGION="" f  s REGION=$o(object("data","regions",REGION)) q:REGION=""  d
 	. s ITEM="" f ITEM="NULL_SUBSCRIPTS","STDNULLCOLL","JOURNAL","INST_FREEZE_ON_ERROR","QDBRUNDOWN","EPOCHTAPER","AUTODB","STATS","LOCK_CRIT_SEPARATE","BEFORE_IMAGE" d
-	. . i $g(object("regions",REGION,ITEM))=1 s object("regions",REGION,ITEM)="true"
-	. . e  i $g(object("regions",REGION,ITEM))=0 s object("regions",REGION,ITEM)="false"
-	s SEGMENT="" f  s SEGMENT=$o(object("segments",SEGMENT)) q:SEGMENT=""  d
+	. . i $g(object("data","regions",REGION,ITEM))=1 s object("data","regions",REGION,ITEM)="true"
+	. . e  i $g(object("data","regions",REGION,ITEM))=0 s object("data","regions",REGION,ITEM)="false"
+	s SEGMENT="" f  s SEGMENT=$o(object("data","segments",SEGMENT)) q:SEGMENT=""  d
 	. s ITEM="" f ITEM="ENCRYPTION_FLAG","DEFER_ALLOCATE","ASYNCIO" d
-	. . i $g(object("segments",SEGMENT,ITEM))=1 s object("segments",SEGMENT,ITEM)="true"
-	. . e  i $g(object("segments",SEGMENT,ITEM))=0 s object("segments",SEGMENT,ITEM)="false"
+	. . i $g(object("data","segments",SEGMENT,ITEM))=1 s object("data","segments",SEGMENT,ITEM)="true"
+	. . e  i $g(object("data","segments",SEGMENT,ITEM))=0 s object("data","segments",SEGMENT,ITEM)="false"
 	quit
 	;
 	; =========================================================================

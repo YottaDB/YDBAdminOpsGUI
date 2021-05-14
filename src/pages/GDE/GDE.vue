@@ -23,17 +23,17 @@
         >Global Directory Editor (GDE)</span
       >
       
-      <q-btn round style="margin-right:10px" size="sm" icon="add"  :color="$q.dark.isActive ? 'purple' : 'orange'"  @click="addDialog = true">
+      <q-btn flat round style="margin-right:10px" size="md" icon="add"  :color="!$q.dark.isActive ? 'purple' : 'orange'"  @click="addDialog = true">
         <q-tooltip>
         Add Segment,Region and Name
         </q-tooltip>
       </q-btn>   
-      <q-btn round style="margin-right:10px" size="sm" icon="text_snippet"  :color="'primary'"  @click="createDialog = true">
+      <q-btn flat round style="margin-right:10px" size="md" icon="text_snippet"  :color="!$q.dark.isActive ? 'purple' : 'orange'"  @click="createDialog = true">
         <q-tooltip>
         Create Database File
         </q-tooltip>
       </q-btn>  
-      <q-btn round style="margin-right:10px" size="sm" icon="delete"  :color="'negative'"  @click="delDialog = true">
+      <q-btn flat round style="margin-right:10px" size="md" icon="delete"  :color="!$q.dark.isActive ? 'purple' : 'orange'"  @click="delDialog = true">
         <q-tooltip>
         Delete Segment,Region and Name
         </q-tooltip>
@@ -64,18 +64,20 @@
               </q-fab-action>
             </q-fab>
             -->
-      <q-banner inline-actions class="text-white bg-red" v-if="!saved && verified && !errors">
-        Changes not saved!
+      <q-page-sticky style="z-index:9999999" position="bottom" :offset="[0, 18]"  v-if="!saved && verified && !errors">
+      <q-banner inline-actions class="text-black bg-warning" v-if="!saved && verified && !errors">
+        Changes are not saved yet, please click on "Apply" to save the changes!
         <template v-slot:action>
           <q-btn
             flat
-            color="white"
+            color="black"
             icon="save"
-            label="Save Changes"
+            label="Apply"
             @click="savedata"
           />
         </template>
       </q-banner>
+              </q-page-sticky>
     </div>
     <!-- ********************************** NAMES-START ********************************************* -->
     <div style="padding:25px">
@@ -1698,16 +1700,13 @@ export default {
     },
     getdata() {
       const self = this;
-      self.$axios({
-        method: "GET",
-        url: self.endPoint + "/gde/get"
-      }).then(
+        self.$M('get^%YDBWEBGDE').then(
         result => {
-          self.names = result.data.names;
-          self.regions = result.data.regions;
-          self.segments = result.data.segments;
-          self.accessMethods = result.data.accessMethods;
-          self.map = result.data.map;
+          self.names = result.names;
+          self.regions = result.regions;
+          self.segments = result.segments;
+          self.accessMethods = result.accessMethods;
+          self.map = result.map;
           self.makeitems();
           self.loading = false;
         },
@@ -1721,17 +1720,12 @@ export default {
     verifydata() {
       const self = this;
       self.verified = false;
-      self.$axios({
-        method: "POST",
-        url: self.endPoint + "/gde/verify",
-        data: {
+      self.$M('verify^%YDBWEBGDE',{
           names: self.names,
           regions: self.regions,
           segments: self.segments
-        }
-      })
-        .then(result => {
-          if (result.data.verifyStatus) {
+      }).then(result => {
+          if (result.verifyStatus) {
             self.verified = true;
             self.errors = null
             return Promise.resolve(self.makeitems());
@@ -1746,7 +1740,7 @@ export default {
             return Promise.resolve(self.makeitems());
           }
           */
-           self.errors = result.data.errors
+           self.errors = result.errors
            self.errorDialog = true
           return Promise.reject(result.data.errors);
         })
@@ -1776,20 +1770,15 @@ export default {
     },
     async savedata() {
       const self = this;
-      self.$axios({
-        method: "POST",
-        url: self.endPoint + "/gde/save",
-        data: {
-          names: self.names,
+      self.$M('save^%YDBWEBGDE',{
+           names: self.names,
           regions: self.regions,
           segments: self.segments,
           deletedItems: self.deletedItems
-        }
-      })
-        .then(result => {
+      }).then(result => {
           self.deletedItems = [];
           self.fromSave = true;
-          if (result.data.verifyStatus) {
+          if (result.verifyStatus) {
             self.getdata();
             self.verified = true;
             self.modified = false;
@@ -1810,8 +1799,8 @@ export default {
           self.notify("Data Not Saved!", false);
           self.errorDialog = true
           self.verified = false;
-          self.errors = result.data.errors
-          return Promise.reject(result.data.errors);
+          self.errors = result.errors
+          return Promise.reject(result.errors);
         })
         .catch(error => {
           self.deletedItems = [];
