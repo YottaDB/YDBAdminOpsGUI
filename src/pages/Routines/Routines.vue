@@ -15,6 +15,7 @@
   <div class="q-pa-md" id="routinesDiv">
     <q-page-sticky position="top-right" :offset="[20, 3]">
       <q-btn
+        id="rtn-btn-delete"
         icon="delete"
         @click="deleteRoutine"
         size="md"
@@ -25,6 +26,7 @@
         ><q-tooltip>Delete Routine?</q-tooltip></q-btn
       >
       <q-btn
+        id="rtn-btn-save"
         icon="save"
         @click="saveRoutine"
         size="md"
@@ -35,6 +37,7 @@
         ><q-tooltip>Save Routine?</q-tooltip></q-btn
       >
       <q-btn
+        id="rtn-btn-add"
         icon="add"
         @click="createRoutine"
         padding="0px"
@@ -56,7 +59,7 @@
         icon="push_pin"
         :color="!$q.dark.isActive ? 'purple' : 'orange'"
       />
-      <q-breadcrumbs gutter="xs" style="padding-left:10px;">
+      <q-breadcrumbs gutter="xs" style="padding-left:10px;" id="breadcrumbs">
         <q-breadcrumbs-el label="Home" />
         <q-breadcrumbs-el label="System Explorer" />
         <q-breadcrumbs-el label="Routines" />
@@ -74,6 +77,7 @@
     >
       <template v-slot:before>
         <span
+         id="routines_header"
           :class="
             $q.dark.isActive
               ? 'text-orange text-center'
@@ -92,6 +96,7 @@
         >
           <div class="q-pa-md">
             <q-input
+            input-class="routine_search_input"
               filled
               bottom-slots
               v-model="searchRoutines"
@@ -105,6 +110,7 @@
                   name="close"
                   @click="searchRoutines = ''"
                   class="cursor-pointer"
+                  id="routine_search_button"
                 />
                 <q-icon
                   name="search"
@@ -119,6 +125,7 @@
               <q-item>
                 <q-item-section>
                   <q-item-label
+                    id="routine_count_section"
                     overline
                     :class="$q.dark.isActive ? 'text-orange' : 'text-purple'"
                     >{{ routineTotal }} Routines</q-item-label
@@ -130,17 +137,18 @@
                 </q-item-section>
               </q-item>
               <div
+                id="routines_column"
                 v-for="(rtn, index) in shownRoutineList"
                 :key="'rlist-' + index"
               >
                 <q-item
-                  clickable
+                :ripple="false"
                   @click="populateRoutine(rtn)"
                   :active="getCurrentActiveRoutine(rtn.r)"
                   dense
                 >
                   <q-item-section>
-                    <q-item-label>{{ rtn.r }}</q-item-label>
+                    <q-item-label><q-btn flat class="full-width" @click="populateRoutine(rtn)" :id="'column-' + rtn.r">{{ rtn.r }}</q-btn></q-item-label>
                   </q-item-section>
                   <!--
                   <q-item-section side>
@@ -218,6 +226,7 @@
       <q-card style="height:185px;width:300px">
         <q-card-section class="q-pa-md">
           <span style="font-size:18px;" class="flex flex-center"
+          id="routines_loader_modal"
             >Loading Routines. Please wait!</span
           >
         </q-card-section>
@@ -234,7 +243,7 @@
       </q-card>
     </q-dialog>
     <q-dialog v-model="createRoutineDialog" persistent>
-      <q-card style="width:300px">
+      <q-card style="width:300px" @keyup.enter="createNewRoutine">
         <q-card-section class="q-pa-md">
           <span style="font-size:18px;" class="flex flex-center"
             >Create New Routine</span
@@ -242,6 +251,7 @@
         </q-card-section>
         <q-card-section>
           <q-input
+            input-class="rtn-add-input"
             outlined
             v-model="newRoutineName"
             label="Routine Name*"
@@ -303,6 +313,7 @@ export default {
       routinePatchCount: 100,
       finishedLoadingAllRoutines: false,
       cmOptions: {
+        autofocus:true,
         tabSize: 4,
         mode: {
           name: "mumps"

@@ -77,8 +77,17 @@ http://localhost:8089
 ##### Notes
 - ydb_routines variable needs to be set correctly to point to the routines of the application. You can either move the routines manually to a location specified in ydb_routines, 
 or you can modify ydb_routines before YottaDB process start up
+
 ```bash
 export ydb_routines=`$ydb_dist/yottadb -run %XCMD 'W $P($P($ZRO,"(",1,2),")")_" "_"$PWD/routines"_")"_$P($ZRO,")",2,$L($ZRO,")"))'` 
 ```
 - The instance of the web server has to be started from the project root folder, where the folder ./dist/spa/ contains the project's built files. 
 
+#### Testing
+ - Testing the app requires the project files to be built first
+ - The testing framework assumes the server is running on port 8089. The port is specified in tests/bootstap.js
+ - The tests run by default in headless mode (no browser running in the foreground). The setting is also in tests/bootstap.js
+ - to run the tests:
+ ```bash
+ npm test
+ ``` 

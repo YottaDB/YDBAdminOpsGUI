@@ -14,81 +14,82 @@
 	;
 	;
 GETROUTINESLIST(I,O)
-	N PATTERN
-	S PATTERN=$G(I("data","PATTERN"))
-	I PATTERN="" S PATTERN="*"
-	N RTNS,R S R=$NA(O("data"))
-	D GetRoutineList^%YDBUTILS(.RTNS,PATTERN)
-	N PATHS,A,C
-	S A="" F  S A=$O(RTNS(A)) Q:A=""  D
-	. I $I(C) D
-	. . S @R@("RLIST",C,"r")=A
-	. . S @R@("RLIST",C,"p")=RTNS(A)
-	. . I RTNS(A)]"" S PATHS(RTNS(A))=""
-	s @R@("RTOTAL")=$G(RTNS,0)
-	S A="",C=0 F  S A=$O(PATHS(A)) Q:A=""  D
-	. I $I(C) S @R@("PLIST",C)=A
-	Q
+	new pattern
+	set pattern=$get(I("data","PATTERN"))
+	if pattern="" set pattern="*"
+	new routines,response set response=$name(O("data"))
+	do GetRoutineList^%YDBUTILS(.routines,pattern)
+	new paths,id,counter
+	set id="" for  set id=$order(routines(id)) quit:id=""  do
+	. if $increment(counter) do
+	. . set @response@("RLIST",counter,"r")=id
+	. . set @response@("RLIST",counter,"p")=routines(id)
+	. . if routines(id)]"" set paths(routines(id))=""
+	set @response@("RTOTAL")=$get(routines,0)
+	set id="",counter=0 for  set id=$order(paths(id)) quit:id=""  do
+	. if $increment(counter) set @response@("PLIST",counter)=id
+	quit
+	;
 	;
 POPULATEROUTINE(I,O)
-	N RTN,PATH,R
-	S R=$NA(O("data"))
-	S RTN=I("data","RTN")
-	S PATH=I("data","PATH")
-	N FILE,FULLPATH
-	S FULLPATH=PATH
-	I $E(RTN)="%" S FULLPATH=FULLPATH_"_"_$E(RTN,2,$L(RTN))_".m"
-	E  S FULLPATH=FULLPATH_RTN_".m"
-	I $$FileExists^%YDBUTILS(FULLPATH) D  I 1
-	. D ReadFileByLine^%YDBUTILS(FULLPATH,.FILE) 
-	. S @R@("STATUS")="true"
-	E  S @R@("STATUS")="false" Q
-	M @R@("CODE")=FILE ZK @R@("CODE")
-	Q
+	new routine,path,response
+	set response=$name(O("data"))
+	set routine=$get(I("data","RTN"))
+	set path=$get(I("data","PATH"))
+	new file,fullpath
+	set fullpath=path
+	if $zextract(routine)="%" set fullpath=fullpath_"_"_$zextract(routine,2,$zlength(routine))_".m"
+	else  set fullpath=fullpath_routine_".m"
+	if $$FileExists^%YDBUTILS(fullpath) do  if 1
+	. do ReadFileByLine^%YDBUTILS(fullpath,.file) 
+	. set @response@("STATUS")="true"
+	else  set @response@("STATUS")="false" quit
+	merge @response@("CODE")=file zkill @response@("CODE")
+	quit
 	;
 SAVEROUTINE(I,O)
-	N R,DATA,F,RTN,PATH
-	M DATA=I("data","DATA") I '$D(DATA) S @R@("STATUS")="false" Q
-	S RTN=$G(I("data","ROUTINE")) I RTN=""  S @R@("STATUS")="false" Q
-	S PATH=$G(I("data","PATH")) I PATH=""  S @R@("STATUS")="false" Q
-	S R=$NA(O("data"))
-	I $E(RTN)="%" S $E(RTN)="_"
-	D WriteFile^%YDBUTILS(PATH_RTN_".m",.DATA)
-	I $$FileExists^%YDBUTILS(PATH_RTN_".m") D  I 1
-	. D ReadFileByLine^%YDBUTILS(PATH_RTN_".m",.FILE) 
-	M @R@("CODE")=FILE ZK @R@("CODE")
-	S @R@("STATUS")="true"
-	Q
-	;
+	new response,data,routine,path
+	merge data=I("data","DATA") if '$data(data) set @response@("STATUS")="false" quit
+	set routine=$get(I("data","ROUTINE")) if routine=""  set @response@("STATUS")="false" quit
+	set path=$get(I("data","PATH")) if path=""  set @response@("STATUS")="false" quit
+	set response=$name(O("data"))
+	if $zextract(routine)="%" set $zextract(routine)="_"
+	do WriteFile^%YDBUTILS(path_routine_".m",.data)
+	if $$FileExists^%YDBUTILS(path_routine_".m") do  if 1
+	. do ReadFileByLine^%YDBUTILS(path_routine_".m",.file) 
+	merge @response@("CODE")=file zkill @response@("CODE")
+	set @response@("STATUS")="true"
+	quit	
+	;	
 GETROUTINEPATHS(I,O)
-	N A,R
-	S R=$NA(O("data"))
-	D RoutinePaths^%YDBUTILS(.A)
-	I '$D(A) S @R@("STATUS")="false" Q
-	M @R@("PATHS")=A S @R@("STATUS")="true"
-	Q
+	new id,response
+	set response=$name(O("data"))
+	do RoutinePaths^%YDBUTILS(.id)
+	if '$data(id) set @response@("STATUS")="false" quit
+	merge @response@("PATHS")=id set @response@("STATUS")="true"
+	quit
 	;	
 CREATENEWROUTINE(I,O)
-	N RTN,PATH,R
-	S R=$NA(O("data"))
-	S RTN=$G(I("data","ROUTINE")) I RTN="" S @R@("STATUS")="false" Q
-	S PATH=$G(I("data","PATH")) I PATH="" S @R@("STATUS")="false" Q
-	I $E(RTN)="%" S $E(RTN)="_"
-	I $$FileExists^%YDBUTILS(PATH_"/"_RTN_".m") S @R@("STATUS")="false" Q
-	I '$$DirectoryExists^%YDBUTILS(PATH) S @R@("STATUS")="false" Q
-	N A S A(1)=I("data","ROUTINE")
-	D WriteFile^%YDBUTILS(PATH_"/"_RTN_".m",.A)
-	S @R@("STATUS")="true" 
-	Q
+	new routine,path,response
+	set response=$name(O("data"))
+	set routine=$get(I("data","ROUTINE")) if routine="" set @response@("STATUS")="false" quit
+	set path=$get(I("data","PATH")) if path="" set @response@("STATUS")="false" quit
+	if $zextract(routine)="%" set $zextract(routine)="_"
+	if $$FileExists^%YDBUTILS(path_"/"_routine_".m") S @response@("STATUS")="false" quit
+	if '$$DirectoryExists^%YDBUTILS(path) set @response@("STATUS")="false" quit
+	new id set id(1)=I("data","ROUTINE")
+	do WriteFile^%YDBUTILS(path_"/"_routine_".m",.id)
+	set @response@("STATUS")="true" 
+	quit
 	;
 DELETEROUTINE(I,O)
-	N R,DATA,F,RTN,PATH
-	S RTN=$G(I("data","ROUTINE")) I RTN=""  S @R@("STATUS")="false" Q
-	S PATH=$G(I("data","PATH")) I PATH=""  S @R@("STATUS")="false" Q
-	S R=$NA(O("data"))
-	I $E(RTN)="%" S $E(RTN)="_"
-	D DeleteFile^%YDBUTILS(PATH_RTN_".m")
-	S @R@("STATUS")="true"
-	Q
+	new reponse,data,routine,path
+	set routine=$get(I("data","ROUTINE")) if routine=""  set @response@("STATUS")="false" quit
+	set path=$get(I("data","PATH")) if path=""  set @response@("STATUS")="false" quit
+	set response=$name(O("data"))
+	if $zextract(routine)="%" set $zextract(routine)="_"
+	do DeleteFile^%YDBUTILS(path_routine_".m")
+	set @response@("STATUS")="true"
+	quit
 	;
 	;

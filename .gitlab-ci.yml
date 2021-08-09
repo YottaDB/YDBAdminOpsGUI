@@ -23,3 +23,23 @@ commit-verify:
     - wget https://gitlab.com/YottaDB/DB/YDB/-/raw/master/ci/commit_verify.sh
     - chmod +x commit_verify.sh
     - ./commit_verify.sh tools/ci/needs_copyright.sh https://gitlab.com/YottaDB/UI/YDBAdminOpsGUI/
+
+ydb-gui-test:
+  image: ubuntu:20.04
+  stage: build
+  script:
+    - apt-get update
+    - export DEBIAN_FRONTEND="noninteractive" 
+    - apt-get -y install tzdata pkg-config
+    - apt-get install -y git wget nodejs npm binutils libicu-dev libasound2
+    - apt-get install -y libnss3-dev libgdk-pixbuf2.0-dev libgtk-3-dev libxss-dev
+    - apt-get install -y libgconf-2-4 libatk1.0-0 libatk-bridge2.0-0 libgdk-pixbuf2.0-0 libgtk-3-0 
+    - wget https://gitlab.com/YottaDB/DB/YDB/raw/master/sr_unix/ydbinstall.sh
+    - chmod +x ./ydbinstall.sh
+    - ./ydbinstall.sh --utf8 default --verbose --overwrite-existing
+    - source $(pkg-config --variable=prefix yottadb)/ydb_env_set
+    - npm install
+    - npm run build
+    - export ydb_routines=`$ydb_dist/yottadb -run %XCMD 'W $P($P($ZRO,"(",1,2),")")_" "_"$PWD/routines"_")"_$P($ZRO,")",2,$L($ZRO,")"))'` 
+    - $ydb_dist/yottadb -run 'Start^%YDBWEB'
+    - npm test

@@ -7,7 +7,7 @@
   "private": true,
   "scripts": {
     "lint": "eslint --ext .js,.vue ./",
-    "test": "echo \"No test specified\" && exit 0",
+    "test": "mocha tests/bootstrap.js --recursive --timeout=300000 --bail tests",
     "build": "./node_modules/@quasar/app/bin/quasar build",
     "dev": "./node_modules/@quasar/app/bin/quasar dev"
   },
@@ -25,6 +25,7 @@
   "devDependencies": {
     "@quasar/app": "^2.2.6",
     "babel-eslint": "^10.0.1",
+    "chai": "^4.3.4",
     "devtron": "^1.4.0",
     "electron": "^9.4.4",
     "electron-builder": "^22.11.2",
@@ -34,7 +35,11 @@
     "eslint": "^7.26.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-vue": "^7.7.0",
-    "eslint-webpack-plugin": "^2.4.0"
+    "eslint-webpack-plugin": "^2.4.0",
+    "http-server": "^0.12.3",
+    "lodash": "^4.17.21",
+    "mocha": "^9.0.3",
+    "puppeteer": "^10.2.0"
   },
   "browserslist": [
     "ie >= 11",
