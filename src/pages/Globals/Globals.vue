@@ -23,7 +23,7 @@
         icon="push_pin"
         :color="!$q.dark.isActive ? 'purple' : 'orange'"
       />
-      <q-breadcrumbs gutter="xs" style="padding-left:10px;">
+      <q-breadcrumbs gutter="xs" style="padding-left:10px;" id="breadcrumbs">
         <q-breadcrumbs-el label="Home" />
         <q-breadcrumbs-el label="System Explorer" />
         <q-breadcrumbs-el label="Globals" />
@@ -62,6 +62,7 @@
           <span
             :class="$q.dark.isActive ? 'text-orange' : 'text-purple'"
             style="font-size:28px;padding:5px"
+            id="globals_header"
           >
             Globals
           </span>
@@ -74,6 +75,7 @@
           >
             <div class="q-pa-md">
               <q-input
+                class="input_globals_search"
                 filled
                 bottom-slots
                 v-model="searchGlobals"
@@ -112,17 +114,17 @@
                   </q-item-section>
                 </q-item>
                 <div
+                  id="globals_column"
                   v-for="(glbl, index) in shownGlobalList"
                   :key="'glist-' + index"
                 >
                   <q-item
                     dense
-                    clickable
                     @click="populateGlobal(glbl.g)"
                     :active="getCurrentActiveGlobal(glbl.g)"
                   >
                     <q-item-section>
-                      <q-item-label>{{ glbl.g }}</q-item-label>
+                      <q-item-label><q-btn flat class="full-width" @click="populateGlobal(glbl.g)" :id="'column-' + String(glbl.g).replace('^','')">{{ glbl.g }}</q-btn></q-item-label>
                     </q-item-section>
                     <!--
                   <q-item-section side>
@@ -246,6 +248,7 @@
               v-if="tabData && tabData[tab] && tabData[tab]"
             >
               <q-tree
+                id="global_tree"
                 :nodes="tabData && tabData[tab] && tabData[tab].globalNodes"
                 node-key="key"
                 :selected.sync="tabData[tab].selectedGlblNode"
@@ -327,7 +330,7 @@
             :name="tabData && tabData[tab] && tabData[tab].codeIcon"
             style="font-size: 5rem;"
           />
-          <span class="wraptext">{{
+          <span class="wraptext" id="right_drawer_global_editor_title" >{{
             tabData && tabData[tab] && tabData[tab].selectedGlblNode
           }}</span>
         </q-card-section>
@@ -354,11 +357,12 @@
           </div>
         </q-card-section>
         <q-card-actions align="right" class="text-primary">
-          <q-btn flat label="SAVE (SET)" @click="saveGlobal" />
+          <q-btn flat label="SAVE (SET)" @click="saveGlobal" class="right_drawer_button_save"/>
           <q-btn
             flat
             color="negative"
             label="KILL GLOBAL (KILL)"
+            class="right_drawer_button_kill"
             @click="killGlobal"
           />
           <q-btn

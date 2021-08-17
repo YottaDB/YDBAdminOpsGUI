@@ -10,118 +10,128 @@
 	;#   the license, please stop and do not read further.           #
 	;#                                                               #
 	;#################################################################		
-	Q
+	quit
 	;
 	;
 GETGLOBALSLIST(I,O)
-	N PATTERN
-	S PATTERN=$G(I("data","PATTERN"))
-	I PATTERN="" S PATTERN="*"
-	N GLBLS,R S R=$NA(O("data"))
-	D GetGlobalList^%YDBUTILS(.GLBLS,PATTERN)
-	N PATHS,A,C
-	S A="" F  S A=$O(GLBLS(A)) Q:A=""  D
-	. I $I(C) D
-	. . S @R@("GLIST",C,"g")=A
-	. . I GLBLS(A)]"" S PATHS(GLBLS(A))=""
-	s @R@("GTOTAL")=$G(C,0)
-	Q
+	new pattern
+	set pattern=$get(I("data","PATTERN"))
+	if pattern="" set pattern="*"
+	new globals,response set response=$name(O("data"))
+	do GetGlobalList^%YDBUTILS(.globals,pattern)
+	new paths,id,counter
+	set id="" for  set id=$O(globals(id)) quit:id=""  do
+	. if $increment(counter) do
+	. . set @response@("GLIST",counter,"g")=id
+	. . if globals(id)]"" set paths(globals(id))=""
+	set @response@("GTOTAL")=$get(counter,0)
+	quit
 	;
 POPULATEGLOBALS(I,O)
-	N R S R=$NA(O("data"))
-	N G S G=$G(I("data","GLBL"))
-	N S S S=$G(I("data","SIZE")) I S="" S S=100
-	N SR S SR=$G(I("data","SEARCH"))
-	I G="" S @R@("STATUS")="false" Q
-	I '$D(@G) S @R@("STATUS")="false" Q
-	I SR="",$O(@G@(""))="" D SETNODE Q
-	I SR]"",$O(@G@(""))="",G[SR D SETNODE Q
-	N A,C,CNT S CNT=0,C=0
-	S A="" F  S A=$O(@G@(A)) Q:A=""  D
-	. I SR]"",$NA(@G@(A))'[SR Q
-	. I S,$I(CNT),C<S,$I(C) D SETNODES I 1
-	. E  I 'S,$I(CNT),$I(C) D SETNODES
-	I S,CNT>S S @R@("MESSAGE")=C_" node(s) out of "_CNT
-	E  S @R@("MESSAGE")=C_" node(s)"
-	I $D(@R@("NODES")) S @R@("STATUS")="true"
-	E  S @R@("STATUS")="false"
-	Q
+	new response set response=$name(O("data"))
+	new global set global=$get(I("data","GLBL"))
+	new size set size=$get(I("data","SIZE")) if size="" set size=100
+	new search set search=$get(I("data","SEARCH"))
+	if global="" set @response@("STATUS")="false" quit
+	if '$data(@global) set @response@("STATUS")="false" quit
+	if search="",$order(@global@(""))="" do setnode quit
+	if search]"",$order(@global@(""))="",global[search do setnode quit
+	new id,counter,count set count=0,counter=0
+	set id="" for  set id=$order(@global@(id)) quit:id=""  do
+	. if search]"",$name(@global@(id))'[search quit
+	. if size,$increment(count),counter<size,$increment(counter) do setnodes if 1
+	. else  if 'size,$increment(count),$increment(counter) do setnodes
+	if size,count>size set @response@("MESSAGE")=counter_" node(s) out of "_count	
+	else  set @response@("MESSAGE")=counter_" node(s)"
+	if $data(@response@("NODES")) set @response@("STATUS")="true"
+	else  set @response@("STATUS")="false"
+	quit
 	;
-SETNODE
-	S @R@("NODES",1,"expandable")="false"
-	S @R@("NODES",1,"label")=G
-	S @R@("NODES",1,"body")="story"
-	S @R@("NODES",1,"key")=G
-	S @R@("NODES",1,"story")=$$GETNODEVALUE(G)
-	S @R@("NODES",1,"body")="story"
-	S @R@("NODES",1,"icon")="text_snippet"
-	S @R@("NODES",1,"selectable")="true"
-	S @R@("MESSAGE")="1 node(s)"
-	S @R@("STATUS")="true"
-	Q	
+setnode
+	set @response@("NODES",1,"expandable")="false"
+	set @response@("NODES",1,"label")=global
+	set @response@("NODES",1,"body")="story"
+	set @response@("NODES",1,"key")=global
+	set @response@("NODES",1,"story")=$$GETNODEVALUE(global)
+	set @response@("NODES",1,"body")="story"
+	set @response@("NODES",1,"icon")="text_snippet"
+	set @response@("NODES",1,"selectable")="true"
+	set @response@("MESSAGE")="1 node(s)"
+	set @response@("STATUS")="true"
+	quit	
 	;
-SETNODES
-	S @R@("NODES",C,"label")=$NA(@G@(A))
-	S @R@("NODES",C,"key")=$NA(@G@(A))
-	S @R@("NODES",C,"body")="story"
-	S @R@("NODES",C,"story")=$$GETNODEVALUE($NA(@G@(A)))
-	I $O(@G@(A,""))]"" S @R@("NODES",C,"lazy")="true"
-	E  S @R@("NODES",C,"expandable")="false"
-	I $D(@G@(A))=1 S @R@("NODES",C,"icon")="text_snippet"
-	I $D(@G@(A))=10 S @R@("NODES",C,"icon")="folder"
-	I $D(@G@(A))=11 S @R@("NODES",C,"icon")="source"
-	S @R@("NODES",C,"selectable")="true"
-	;I $D(@G@(A))=11 S @R@("NODES",C,"label")=@R@("NODES",C,"label")_"="_$E($$GETNODEVALUE($NA(@G@(A))),1,100)
-	Q
+setnodes
+	set @response@("NODES",counter,"label")=$name(@global@(id))
+	set @response@("NODES",counter,"key")=$name(@global@(id))
+	set @response@("NODES",counter,"body")="story"
+	set @response@("NODES",counter,"story")=$$GETNODEVALUE($name(@global@(id)))
+	if $O(@global@(id,""))]"" set @response@("NODES",counter,"lazy")="true"
+	else  set @response@("NODES",counter,"expandable")="false"
+	if $data(@global@(id))=1 set @response@("NODES",counter,"icon")="text_snippet"
+	if $data(@global@(id))=10 set @response@("NODES",counter,"icon")="folder"
+	if $data(@global@(id))=11 set @response@("NODES",counter,"icon")="source"
+	set @response@("NODES",counter,"selectable")="true"
+	;I $data(@global@(id))=11 set @response@("NODES",counter,"label")=@response@("NODES",counter,"label")_"="_$E($$GETNODEVALUE($name(@global@(id))),1,100)
+	quit
 	;
-GETNODEVALUE(GLBL) Q $G(@GLBL)
+GETNODEVALUE(global) quit $get(@global)
 	;
 GETGLOBALVALUE(I,O)
-	N R,G
-	S R=$NA(O("data"))
-	S G=$G(I("data","GLOBAL"))
-	I G="" S @R@("STATUS")="false" Q
-	I '$D(@G) S @R@("STATUS")="false" Q
-	S @R@("VALUE")=$G(@G)
-	I $D(@G)=1 S @R@("ICON")="text_snippet"
-	I $D(@G)=10 S @R@("ICON")="folder"
-	I $D(@G)=11 S @R@("ICON")="source"
-	S @R@("STATUS")="true"
-	Q
+	new response,global
+	set response=$name(O("data"))
+	set global=$get(I("data","GLOBAL"))
+	if global="" set @response@("STATUS")="false" quit
+	if '$data(@global) set @response@("STATUS")="false" quit
+	set @response@("VALUE")=$get(@global)
+	if $data(@global)=1 set @response@("ICON")="text_snippet"
+	if $data(@global)=10 set @response@("ICON")="folder"
+	if $data(@global)=11 set @response@("ICON")="source"
+	set @response@("STATUS")="true"
+	quit
 	;
 SAVEGLOBAL(I,O)
-	N G,V,R
-	S R=$NA(O("data"))
-	S G=$G(I("data","GLOBAL")) I G="" S @R@("STATUS")="false" Q
-	I '$D(I("data","VALUE")) S @R@("STATUS")="false" Q
-	S V=I("data","VALUE")
-	S @G=V
-	I $D(@G)=1 S @R@("ICON")="text_snippet"
-	I $D(@G)=10 S @R@("ICON")="folder"
-	I $D(@G)=11 S @R@("ICON")="source"
-	S @R@("STATUS")="true"
-	S @R@("VALUE")=$G(@G)
-	Q
+	new global,value,response
+	set response=$name(O("data"))
+	set global=$get(I("data","GLOBAL")) if global="" set @response@("STATUS")="false" quit
+	if '$data(I("data","VALUE")) set @response@("STATUS")="false" quit
+	set value=I("data","VALUE")
+	set @global=value
+	if $data(@global)=1 set @response@("ICON")="text_snippet"
+	if $data(@global)=10 set @response@("ICON")="folder"
+	if $data(@global)=11 set @response@("ICON")="source"
+	set @response@("STATUS")="true"
+	set @response@("VALUE")=$get(@global)
+	quit
 	;
 KILLGLOBAL(I,O)
-	N G,V,R
-	S R=$NA(O("data"))
-	S G=$G(I("data","GLOBAL")) I G="" S @R@("STATUS")="false" Q
-	K @G
-	S @R@("STATUS")="true"
-	Q
+	new global,value,response
+	set response=$name(O("data"))
+	set global=$get(I("data","GLOBAL")) if global="" set @response@("STATUS")="false" quit
+	kill @global
+	set @response@("STATUS")="true"
+	quit
 	;
 ZKILLLOBAL(I,O)
-	N G,V,R
-	S R=$NA(O("data"))
-	S G=$G(I("data","GLOBAL")) I G="" S @R@("STATUS")="false" Q
-	ZK @G
-	I $D(@G)=1 S @R@("ICON")="text_snippet"
-	I $D(@G)=10 S @R@("ICON")="folder"
-	I $D(@G)=11 S @R@("ICON")="source"
-	S @R@("STATUS")="true"
-	Q
-	;	
+	new global,value,response
+	set response=$name(O("data"))
+	set global=$get(I("data","GLOBAL")) if global="" set @response@("STATUS")="false" quit
+	zkill @global
+	if $data(@global)=1 set @response@("ICON")="text_snippet"
+	if $data(@global)=10 set @response@("ICON")="folder"
+	if $data(@global)=11 set @response@("ICON")="source"
+	set @response@("STATUS")="true"
+	quit
 	;
+TESTADDGLOBAL
+	set ^YDBGLBLMDLTST("LEVEL1")="VALUE"
+	write 1
+	quit
 	;
+TESTCHECKGLOBAL
+	write $get(^YDBGLBLMDLTST("LEVEL1"))
+	quit
 	;
+TESTCHECKKILLEDGLOBAL
+	if $get(^YDBGLBLMDLTST("LEVEL1"))="" write 1 quit
+	write 2
+	quit
