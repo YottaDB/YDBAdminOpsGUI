@@ -34,12 +34,21 @@ ydb-gui-test:
     - apt-get install -y git wget nodejs npm binutils libicu-dev libasound2
     - apt-get install -y libnss3-dev libgdk-pixbuf2.0-dev libgtk-3-dev libxss-dev
     - apt-get install -y libgconf-2-4 libatk1.0-0 libatk-bridge2.0-0 libgdk-pixbuf2.0-0 libgtk-3-0 
+    - apt-get install -y --no-install-recommends build-essential cmake bison flex xxd libreadline-dev libssl-dev libconfig-dev
+    - apt-get install -y --no-install-recommends libcmocka-dev
+    - apt-get install -y --no-install-recommends default-jdk expect golang-go curl
+    - git clone https://github.com/bats-core/bats-core.git
+    - ./bats-core/install.sh /usr
     - wget https://gitlab.com/YottaDB/DB/YDB/raw/master/sr_unix/ydbinstall.sh
     - chmod +x ./ydbinstall.sh
-    - ./ydbinstall.sh --utf8 default --verbose --overwrite-existing
+    - ./ydbinstall.sh --utf8 default --verbose --octo
     - source $(pkg-config --variable=prefix yottadb)/ydb_env_set
+    - ./tools/ci/octo_setup.sh
     - npm install
     - npm run build
     - export ydb_routines=`$ydb_dist/yottadb -run %XCMD 'W $P($P($ZRO,"(",1,2),")")_" "_"$PWD/routines"_")"_$P($ZRO,")",2,$L($ZRO,")"))'` 
     - $ydb_dist/yottadb -run 'Start^%YDBWEB'
     - npm test
+    
+    
+
