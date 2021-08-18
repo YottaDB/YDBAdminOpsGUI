@@ -14,44 +14,54 @@
 	;
 	;
 GETTABLESLIST(I,O)
-	N PATTERN,COUNT
-	S PATTERN=$G(I("data","PATTERN"))
-	I PATTERN["*" S PATTERN=$TR(PATTERN,"*")
-	N TABLES,TABLE,RETURN S RETURN=$NA(O("data"))
-	I $D(^%ydboctoschema) D
-	. S TABLE=$E(PATTERN,1,$L(PATTERN)-1) F  S TABLE=$O(^%ydboctoschema(TABLE)) Q:TABLE=""  D
-	. . I PATTERN]"",$L(PATTERN)<$L(TABLE),TABLE'[PATTERN Q
-	. . I PATTERN]"",$L(PATTERN)>$L(TABLE),PATTERN'[TABLE Q
-	. . I PATTERN]"",$L(PATTERN)=$L(TABLE),PATTERN'=TABLE Q
-	. . I $I(COUNT)
-	. . S @RETURN@("TABLELIST",COUNT,"T")=TABLE
-	S @RETURN@("TABLETOTAL")=$G(COUNT,0)
+	new pattern,count
+	set pattern=$get(I("data","PATTERN"))
+	if pattern["*" set pattern=$translate(pattern,"*")
+	new table,return set return=$name(O("data"))
+	new list do GetOctoTables(.list)
+	if $data(list) do
+	. set table=$zextract(pattern,1,$zlength(pattern)-1) for  set table=$order(list(table)) quit:table=""  do
+	. . if pattern]"",$zlength(pattern)<$zlength(table),table'[pattern quit
+	. . if pattern]"",$zlength(pattern)>$zlength(table),pattern'[table quit
+	. . if pattern]"",$zlength(pattern)=$zlength(table),pattern'=table quit
+	. . if $increment(count)
+	. . set @return@("TABLELIST",count,"T")=table
+	set @return@("TABLETOTAL")=$get(count,0)
 	Q
 	;
 EXECUTESQL(I,O)
-	N STATEMENT,RESULT
-	S STATEMENT=$G(I("data","STATEMENT"))_";"
-	N FILECONTENT
-	S FILECONTENT(1)=STATEMENT
-	N SQLFILE S SQLFILE="OCTO_SQL_"_$J_".sql"
-	N SQLRESULT S SQLRESULT="OCTO_SQL_RESULT_"_$J_".txt"
-	D DeleteFile^%YDBUTILS(SQLFILE)
-	D WriteFile^%YDBUTILS(SQLFILE,.FILECONTENT)
-	D RunShellCommand^%YDBUTILS("$ydb_dist/plugin/octo/bin/octo -f "_SQLFILE_" > "_SQLRESULT)
-	D DeleteFile^%YDBUTILS(SQLFILE)
-	D ReadFileByChunk^%YDBUTILS(SQLRESULT,4080,.RESULT)
-	D DeleteFile^%YDBUTILS(SQLRESULT)
-	N LINE,ROW,PIECE,I,FIELD,OUTPUT,MAXDELIMIT
-	S PIECE=1,ROW=1,FIELD="",MAXDELIMIT=0
-	S LINE="" F  S LINE=$O(RESULT(LINE)) Q:LINE=""  D
-	. F I=1:1:$L(RESULT(LINE)) D
-	. . I $E(RESULT(LINE),I)=$C(10) S OUTPUT(ROW,PIECE)=FIELD S ROW=ROW+1,PIECE=1,FIELD="" S:MAXDELIMIT<ROW MAXDELIMIT=ROW Q
-	. . I $E(RESULT(LINE),I)="|" S OUTPUT(ROW,PIECE)=FIELD S PIECE=PIECE+1,FIELD="" Q
-	. . S FIELD=FIELD_$E(RESULT(LINE),I)
-	I $D(OUTPUT) D
-	. N LAST
-	. S LAST=$O(OUTPUT(""),-1) F I=1:1:MAXDELIMIT S OUTPUT(LAST,I)=$G(OUTPUT(LAST,I))
-	M O("data","RESULT")=OUTPUT
-	S O("data","STATUS")="true"
-	Q
+	new statement,result
+	set statement=$get(I("data","STATEMENT"))_";"
+	new filecontent
+	set filecontent(1)=statement
+	new sqlFile set sqlFile="OCTO_SQL_"_$job_".sql"
+	new SQLresult set SQLresult="OCTO_SQL_result_"_$job_".txt"
+	do DeleteFile^%YDBUTILS(sqlFile)
+	do WriteFile^%YDBUTILS(sqlFile,.filecontent)
+	do RunShellCommand^%YDBUTILS("$ydb_dist/plugin/octo/bin/octo -f "_sqlFile_" > "_SQLresult)
+	do DeleteFile^%YDBUTILS(sqlFile)
+	do ReadFileByChunk^%YDBUTILS(SQLresult,4080,.result)
+	do DeleteFile^%YDBUTILS(SQLresult)
+	new line,row,piece,i,field,output,max
+	set piece=1,row=1,field="",max=0
+	set line="" for  set line=$order(result(line)) quit:line=""  do
+	. for I=1:1:$zlength(result(line)) do
+	. . if $zextract(result(line),I)=$C(10) set output(row,piece)=field set row=row+1,piece=1,field="" set:max<row max=row quit
+	. . if $zextract(result(line),I)="|" set output(row,piece)=field set piece=piece+1,field="" quit
+	. . set field=field_$zextract(result(line),I)
+	if $data(output) do
+	. new last
+	. set last=$order(output(""),-1) for I=1:1:max set output(last,I)=$get(output(last,I))
+	merge O("data","RESULT")=output
+	set O("data","STATUS")="true"
+	quit
 	;
+GetOctoTables(list)
+	new input,output
+	set input("data","STATEMENT")="select c.relname from pg_catalog.pg_class c"
+	do EXECUTESQL(.input,.output)
+	new last set last=$order(output("data","RESULT",""),-1)
+	kill output("data","RESULT",last)
+	new row set row="" for  set row=$order(output("data","RESULT",row)) quit:row=""  do
+	. if output("data","RESULT",row,1)]"" set list(output("data","RESULT",row,1))=""
+	quit

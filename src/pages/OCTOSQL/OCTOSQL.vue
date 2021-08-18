@@ -23,7 +23,7 @@
         icon="push_pin"
         :color="!$q.dark.isActive ? 'purple' : 'orange'"
       />
-      <q-breadcrumbs gutter="xs" style="padding-left:10px;">
+      <q-breadcrumbs gutter="xs" style="padding-left:10px;" id="breadcrumbs">
         <q-breadcrumbs-el label="Home" />
         <q-breadcrumbs-el label="System Explorer" />
         <q-breadcrumbs-el label="OCTO Tables" />
@@ -62,6 +62,7 @@
           <span
             :class="$q.dark.isActive ? 'text-orange' : 'text-purple'"
             style="font-size:28px;padding:5px"
+            id="octo_header"
           >
             OCTO Tables
           </span>
@@ -80,6 +81,7 @@
                 label="Search"
                 :dense="true"
                 @keydown.enter="getTables"
+                class="input_octo_tables_search"
               >
                 <template v-slot:append>
                   <q-icon
@@ -112,20 +114,23 @@
                   </q-item-section>
                 </q-item>
                 <div
+                id="octo_column"
                   v-for="(tbl, index) in shownTableList"
                   :key="'table-list-' + index"
                 >
                   <q-item
                     dense
-                    clickable
                     @click="
                       filteredTbl = '';
                       populateTable(tbl);
                     "
                     :active="getCurrentActiveTable(tbl.T)"
                   >
-                    <q-item-section>
-                      <q-item-label>{{ tbl.T }}</q-item-label>
+                   <q-item-section>
+                      <q-item-label><q-btn flat class="full-width"  @click="
+                      filteredTbl = '';
+                      populateTable(tbl);
+                    " :id="'column-' + String(tbl.T)">{{ tbl.T }}</q-btn></q-item-label>
                     </q-item-section>
                     <!--
                   <q-item-section side>
@@ -212,6 +217,7 @@
                   flat
                   label="EXECUTE"
                   @click="executeSqlStatement"
+                  id="octo-execute-btn"
                 />
                 <div class="row justify-center q-my-md" v-if="loadingTable">
                   <q-spinner-dots
@@ -239,6 +245,10 @@
         </template>
       </q-splitter>
     </transition>
+  <button style="float:right;" id="full-octo-data-btn" @click="octoData=tabData[tab]['hotSettings']['data']" />
+  <div v-show="false" id="full-octo-data-div">
+      {{octoData.join('\n')}}
+  </div>
   </div>
 </template>
 <script>
@@ -254,6 +264,7 @@ export default {
   },
   data() {
     return {
+      octoData:[],
       collapsed: false,
       tablekey: uid(),
       hotSettings: {
@@ -301,6 +312,7 @@ export default {
       codeLineBreak: false,
       code: "",
       cmOptions: {
+        autofocus:true,
         tabSize: 4,
         lineWrapping: false,
         mode: {
