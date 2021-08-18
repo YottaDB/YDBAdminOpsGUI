@@ -6,10 +6,11 @@
   "author": "Ahmed A <ahmed@yottadb.com>",
   "private": true,
   "scripts": {
-    "lint": "eslint --ext .js,.vue ./",
-    "test": "mocha tests/bootstrap.js --recursive --timeout=300000 --bail tests",
     "build": "./node_modules/@quasar/app/bin/quasar build",
-    "dev": "./node_modules/@quasar/app/bin/quasar dev"
+    "dev": "./node_modules/@quasar/app/bin/quasar dev",
+    "clean": "./node_modules/@quasar/app/bin/quasar clean",
+    "lint": "eslint --ext .js,.vue ./",
+    "test": "mocha tests/bootstrap.js --recursive --timeout=300000 --bail tests"
   },
   "dependencies": {
     "@handsontable/vue": "^6.0.0",

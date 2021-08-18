@@ -13,7 +13,7 @@ The YottaDB Administration GUI is a browser based application that is intended t
 ## Manual Setup for Development
 The GUI is compromised of two parts. 
  1. **The backend**: written in M
- 2. **The fontend**: written in VueJs on top of the UI framework [Quasar](https://quasar.dev/)
+ 2. **The fontend**: written in VueJs
 
 ### Development dependencies (Nodejs and npm are only used in development)
 **Node.js** and **npm** (to compile javascript files)
@@ -35,9 +35,9 @@ cd YDBAdminOpsGUI
 ```
 
 ##### Server
-- Point your ydb_routines environment  to the routines folder
+- Point your ydb_routines environment  to the routines folder. You can replace $PWD/routines with any other path that points to the routines folder. 
 ```bash
-export ydb_routines="$PWD/routines"
+export ydb_routines=`$ydb_dist/yottadb -run %XCMD 'W $P($P($ZRO,"(",1,2),")")_" "_"$PWD/routines"_")"_$P($ZRO,")",2,$L($ZRO,")"))'` 
 ```
 - Start the integrated web server. 
 By default the web server listens on port 8089. This can be changed by passing the ```Start``` label a port number, and modifying the proxy section of ```quasar.conf.js``` file 
@@ -54,7 +54,7 @@ npm install
 ```bash
 npm run dev
 ```
-- Navigate to http://localhost:8080. If port 8080 is unavailable, ```quasar``` will use the closest available port.  Quasar will also report on the port being used whether it's 8080 or any other chosen available port 
+- Navigate to http://localhost:8080. If port 8080 is unavailable, the closest available port will be selected.
 
 
 #### Running the app in production mode.
@@ -89,5 +89,28 @@ export ydb_routines=`$ydb_dist/yottadb -run %XCMD 'W $P($P($ZRO,"(",1,2),")")_" 
  - The tests run by default in headless mode (no browser running in the foreground). The setting is also in tests/bootstap.js
  - to run the tests:
  ```bash
+ $ydb_dist/yottadb -run Start^%YDBWEB
  npm test
+ ```
+
+ #### Application Commands
+ - dev: Run the application in development mode on port 8080 where the client files will be served from.
+ ```bash
+ npm run dev
+ ```
+ - build: Builds the applicatio in dist folder
+ ```bash
+ npm run build
  ``` 
+ - test: Run end-to-end tests
+ ```bash
+ npm test
+ ```
+- clean: Clean all build artifacts
+```bash
+npm run clean
+```
+- lint: Lint application code according to eslint-prettier preset
+```bash
+npm run lint
+```
