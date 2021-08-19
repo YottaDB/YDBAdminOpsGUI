@@ -10,107 +10,119 @@ The YottaDB Administration GUI is a browser based application that is intended t
     2. Globals Explorer
     3. Octo SQL Tables explorer
 
-## Manual Setup for Development
+## Setup
 The GUI is compromised of two parts. 
  1. **The backend**: written in M
  2. **The fontend**: written in VueJs
 
-### Development dependencies (Nodejs and npm are only used in development)
-**Node.js** and **npm** (to compile javascript files)
+### Dependencies
+1. **Node.js** and **npm** (to compile javascript files)
 ```bash
 sudo apt update
 sudo apt install nodejs npm
 ```
+2. ***YottaDB***. 
+```bash
+mkdir /tmp/tmp 
+wget -P /tmp/tmp https://gitlab.com/YottaDB/DB/YDB/raw/master/sr_unix/ydbinstall.sh
+cd /tmp/tmp
+chmod +x ydbinstall.sh
+sudo ./ydbinstall.sh --utf8 default --octo --verbose
+```
 
-
-#### Running the app in development mode
-- Git clone the project in any working directory. 
+#### Running the application in production mode.
+1. Git clone the project in any working directory. 
 ```bash
 git clone https://gitlab.com/YottaDB/UI/YDBAdminOpsGUI.git
 ```
-
-- Change dirctory
+2. Change dirctory.
 ```bash
 cd YDBAdminOpsGUI
 ```
-
-##### Server
-- Point your ydb_routines environment  to the routines folder. You can replace $PWD/routines with any other path that points to the routines folder. 
+3. Install the dependencies.
 ```bash
-export ydb_routines=`$ydb_dist/yottadb -run %XCMD 'W $P($P($ZRO,"(",1,2),")")_" "_"$PWD/routines"_")"_$P($ZRO,")",2,$L($ZRO,")"))'` 
-```
-- Start the integrated web server. 
-By default the web server listens on port 8089. This can be changed by passing the ```Start``` label a port number, and modifying the proxy section of ```quasar.conf.js``` file 
-```bash
-$ydb_dist/yottadb -run Start^%YDBWEB
-```
-
-##### Client
-- Download the nodejs dev dependencies.
-```bash 
 npm install
 ```
-- Run the front-end development server
-```bash
-npm run dev
-```
-- Navigate to http://localhost:8080. If port 8080 is unavailable, the closest available port will be selected.
-
-
-#### Running the app in production mode.
-- Make sure you build the application
+4. Build the application
  ```bash
  npm run build
  ```
-- Start the web server using default port (8089)
+5. Set the required environment variables
 ```bash
-$ydb_dist/yottadb -run Start^%YDBWEB
+source $(pkg-config --variable=prefix yottadb)/ydb_env_set
 ```
-- Or provide a specific port (7777 for example)
+
+6. Start the web server using default port (8089)
 ```bash
-$ydb_dist/yottadb -run Start^%YDBWEB(7777)
+npm run start-server
+# Or provide a specific port (7777 for example)
+npm run start-server 7777
 ```
-- Point your browser to the running application
-```bash
-http://localhost:8089
-```
+
+7. Point your browser to the running application ```http://localhost:8089```
 ##### Notes
-- ydb_routines variable needs to be set correctly to point to the routines of the application. You can either move the routines manually to a location specified in ydb_routines, 
-or you can modify ydb_routines before YottaDB process start up
+- ***ydb_routines*** variable needs to be set correctly to point to the
+  routines of the application. You can either move the routines manually to a
+  location specified in ydb_routines, or you can modify ydb_routines before
+  YottaDB process start up. Running ```npm run start-server``` sets this for
+  you. 
 
 ```bash
 export ydb_routines=`$ydb_dist/yottadb -run %XCMD 'W $P($P($ZRO,"(",1,2),")")_" "_"$PWD/routines"_")"_$P($ZRO,")",2,$L($ZRO,")"))'` 
 ```
 - The instance of the web server has to be started from the project root folder, where the folder ./dist/spa/ contains the project's built files. 
 
+#### Running the application in development mode
+1. Git clone the project in any working directory. 
+```bash
+git clone https://gitlab.com/YottaDB/UI/YDBAdminOpsGUI.git
+```
+
+2. Change dirctory
+```bash
+cd YDBAdminOpsGUI
+```
+3. Download the nodejs dev dependencies.
+```bash 
+npm install
+```
+4. Run the front-end development server
+```bash
+npm run dev
+```
+5. Set the required environment variables
+```bash
+source $(pkg-config --variable=prefix yottadb)/ydb_env_set
+```
+6. Start the integrated M web server (YottaDB). 
+```bash
+npm run start-server
+```
+- By default the web server listens on port 8089. If you'd like to develop using a different port: 
+  - 1) Pass a port to the start script ``` npm run start-server 7777```
+  - 2) Modify the port in the proxy section of ```quasar.conf.js``` file
+
+- Navigate to ```http://localhost:8080```. If port 8080 is unavailable, the closest available port will be selected.
+
 #### Testing
- - Testing the app requires the project files to be built first
- - The testing framework assumes the server is running on port 8089. The port is specified in tests/bootstap.js
- - The tests run by default in headless mode (no browser running in the foreground). The setting is also in tests/bootstap.js
- - to run the tests:
+ 1. Testing the app requires the project files to be built first
+ 2. The testing framework assumes the server is running on port 8089. The port is specified in tests/bootstap.js
+ 3. The tests run by default in headless mode (no browser running in the foreground). The setting is also in tests/bootstap.js
+ 4. to run the tests:
  ```bash
- $ydb_dist/yottadb -run Start^%YDBWEB
+ npm run start-server
  npm test
  ```
 
  #### Application Commands
- - dev: Run the application in development mode on port 8080 where the client files will be served from.
- ```bash
- npm run dev
- ```
- - build: Builds the applicatio in dist folder
- ```bash
- npm run build
- ``` 
- - test: Run end-to-end tests
- ```bash
- npm test
- ```
-- clean: Clean all build artifacts
-```bash
-npm run clean
-```
-- lint: Lint application code according to eslint-prettier preset
-```bash
-npm run lint
-```
+
+|Command|Description|
+|---|---|
+|```npm run start-server```|Start the M Web Server (YottaDB)|
+|```npm run start-server 7777```|Start the M Web Server (YottaDB) on port ```7777```|
+|```npm run stop-server``` |Stop the M Web Server (YottaDB)|
+|```npm run dev```|Run the application in development mode on port 8080 where the client files will be served from|
+|```npm run build```|Build the application in ```dist``` folder|
+|```npm test```|Run end-to-end tests|
+|```npm run clean```|Clean all build artifacts|
+

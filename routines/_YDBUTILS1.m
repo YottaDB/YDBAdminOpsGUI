@@ -1,7 +1,7 @@
 %YDBUTILS1 ; YottaDB Utilities Routine; 05-07-2021
 	;#################################################################
 	;#                                                               #
-	;# Copyright (c) 2021 YottaDB LLC and/or its subsidiaries.       #
+	;# Copyright (c) 2021-2022 YottaDB LLC and/or its subsidiaries.  #
 	;# All rights reserved.                                          #
 	;#                                                               #
 	;#   This source code contains the intellectual property         #
@@ -10,30 +10,27 @@
 	;#   the license, please stop and do not read further.           #
 	;#                                                               #
 	;#################################################################		
-	Q
+	quit
 	;
-RoutinePaths(DIR)
-	N ZRO,PIECE,I,CNT,PATH
-	S ZRO=$ZROUTINES
-	S CNT=1
-	K DIR
-	F  Q:($E(ZRO)'=" ")  S ZRO=$E(ZRO,2,$L(ZRO))
-	F I=1:1:$L(ZRO," ") S PIECE=$P(ZRO," ",I) D
-	.Q:$P(PIECE,".",2)="so"
-	.Q:$P(PIECE,".",2)="o"
-	.I PIECE["(",PIECE[")" S PATH=$P($P(PIECE,"(",2),")")
-	.I PIECE["(" S PATH=$P(PIECE,"(",2)
-	.I PIECE[")" S PATH=$P(PIECE,")")
-	.I PIECE'[")",PIECE'["("  S PATH=PIECE
-	.I $$DirectoryExists^%YDBUTILS(PATH) S DIR(CNT)=PATH
-	.S CNT=CNT+1
-	Q
+RoutinePaths(directory)
+	new zro,piece,I,count,path
+	set zro=$zroutines
+	set count=1
+	kill directory	
+	for  quit:($zextract(zro)'=" ")  set zro=$zextract(zro,2,$zlength(zro))
+	for I=1:1:$zlength(zro," ") set piece=$zpiece(zro," ",I) do
+	. quit:$zpiece(piece,".",2)="so"
+	. quit:$zpiece(piece,".",2)="o"
+	. if piece["(",piece[")" set path=$zpiece($zpiece(piece,"(",2),")")
+	. if piece["(" set path=$zpiece(piece,"(",2)
+	. if piece[")" set path=$zpiece(piece,")")
+	. if piece'[")",piece'["("  set path=piece
+	. if $$DirectoryExists^%YDBUTILS(path) set directory(count)=path
+	. set count=count+1
+	quit
 	;
-	;
-DeleteFile(FILE)
-	N RET,COMMMAND
-	S COMMAND="rm "_FILE
-	D RunShellCommand^%YDBUTILS(COMMAND,.RET)
-	Q
-	;
+DeleteFile(file)
+	open file
+	close file:(delete)
+	quit
 	;

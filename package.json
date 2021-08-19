@@ -7,10 +7,18 @@
   "private": true,
   "scripts": {
     "build": "./node_modules/@quasar/app/bin/quasar build",
+    "build-pwa": "./node_modules/@quasar/app/bin/quasar build -m pwa",
     "dev": "./node_modules/@quasar/app/bin/quasar dev",
+    "dev-pwa": "./node_modules/@quasar/app/bin/quasar dev -m pwa",
     "clean": "./node_modules/@quasar/app/bin/quasar clean",
     "lint": "eslint --ext .js,.vue ./",
-    "test": "mocha tests/bootstrap.js --recursive --timeout=300000 --bail tests"
+    "test": "mocha tests/bootstrap.js --recursive --timeout=300000 --bail tests",
+    "stop-server": "ydb_routines=`$ydb_dist/yottadb -run %XCMD 'w $p($p($zro,\"(\",1,2),\")\")_\" \"_\"$PWD/routines\"_\")\"_$p($zro,\")\",2,$l($zro,\")\"))'`;$ydb_dist/yottadb -run 'Stop^%YDBWEB'",
+    "start-server": "ydb_routines=`$ydb_dist/yottadb -run %XCMD 'w $p($p($zro,\"(\",1,2),\")\")_\" \"_\"$PWD/routines\"_\")\"_$p($zro,\")\",2,$l($zro,\")\"))'`;$ydb_dist/yottadb -run 'Start^%YDBWEB'",
+    "install-server": "path=$($ydb_dist/yottadb -run %XCMD 'f i=1:1:$l($zro,\" \") s x=$p($zro,\" \",i) i x'\"'\"'?.E1\".so\" w $p($p(x,\"(\",$l(x,\"(\")),\")\",1),! q') && find ./routines/ -type f -name \"*.m\"| xargs -L1 -I '{}' cp -v '{}' $path",
+    "uninstall-server": "path=$($ydb_dist/yottadb -run %XCMD 'f i=1:1:$l($zro,\" \") s x=$p($zro,\" \",i) i x'\"'\"'?.E1\".so\" w $p($p(x,\"(\",$l(x,\"(\")),\")\",1),! q') && find ./routines/ -type f -name \"*.m\" |  cut -d \"/\" -f 3 | xargs -L1 -I '{}' echo $path/'{}' | xargs -I '{}' rm -v '{}' | xargs -I '{}' echo '{}'",
+    "start": "$ydb_dist/yottadb -run 'Start^%YDBWEB'",
+    "stop": "$ydb_dist/yottadb -run 'Stop^%YDBWEB'"
   },
   "dependencies": {
     "@handsontable/vue": "^6.0.0",
