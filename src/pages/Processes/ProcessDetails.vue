@@ -1,7 +1,7 @@
 <!--
 #################################################################
 #                                                               #
-# Copyright (c) 2021 YottaDB LLC and/or its subsidiaries.       #
+# Copyright (c) 2021-2022 YottaDB LLC and/or its subsidiaries.  #
 # All rights reserved.                                          #
 #                                                               #
 #   This source code contains the intellectual property         #
@@ -20,6 +20,7 @@
         <q-breadcrumbs-el icon="computer" :label="'Process ' + $route.params.pid" :to="'/process/'+$route.params.pid"/>
       </q-breadcrumbs>
       <q-btn
+       id="btn-go-back"
         round
         style="margin-right:10px"
         :class="$q.dark.isActive?'bg-orange':'bg-purple'"
@@ -33,6 +34,7 @@
         </q-tooltip>
       </q-btn>
       <q-btn
+       id="btn-kill"
         round
         style="margin-right:10px"
         size="md"
@@ -54,38 +56,41 @@
     </q-card>
     <q-card v-if="processAlive">
       <q-tabs v-model="tab" dense :class="$q.dark.isActive?'bg-orange text-white shadow-2':'bg-purple text-white shadow-2'">
-        <q-tab name="details" label="Process Details" />
-        <q-tab name="variables" label="Variables" />
-        <q-tab name="ivariables" label="Intrinsic Variables" />
+        <q-tab name="details" label="Process Details" id="process_details_tab"/>
+        <q-tab name="variables" label="Variables" id="variables_tab" />
+        <q-tab name="ivariables" label="Intrinsic Variables" id="ivariables_tab" />
       </q-tabs>
       <q-separator />
 
-      <q-tab-panels v-model="tab" animated>
-        <q-tab-panel name="details">
+      <q-tab-panels v-model="tab" animated id="tab_panel">
+        <q-tab-panel name="details" id="details_panel">
           <div :class="$q.dark.isActive?'text-h6 text-orange':'text-h6 text-purple'">
             PID:{{ $route.params.pid }} Details
           </div>
           <pre
+          id="details_panel_pre"
             style="max-height:calc(100vh - 302px)"
             v-html="processDetails.join('\n')"
           ></pre>
         </q-tab-panel>
 
-        <q-tab-panel name="variables">
+        <q-tab-panel name="variables" id="variables_panel">
           <div :class="$q.dark.isActive?'text-h6 text-orange':'text-h6 text-purple'">
             PID:{{ $route.params.pid }} Variables
           </div>
           <pre
+          id="variables_panel_pre"
             style="max-height:calc(100vh - 302px)"
             v-html="processVariables.join('\n')"
           ></pre>
         </q-tab-panel>
 
-        <q-tab-panel name="ivariables">
+        <q-tab-panel name="ivariables" id="ivariables_panel">
           <div :class="$q.dark.isActive?'text-h6 text-orange':'text-h6 text-purple'">
             PID:{{ $route.params.pid }} Intrinsic variables
           </div>
           <pre
+          id="ivariables_panel_pre"
             style="max-height:calc(100vh - 302px)"
             v-html="processIVariables.join('\n')"
           ></pre>

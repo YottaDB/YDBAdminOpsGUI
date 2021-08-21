@@ -1,7 +1,7 @@
 <!--
 #################################################################
 #                                                               #
-# Copyright (c) 2021 YottaDB LLC and/or its subsidiaries.       #
+# Copyright (c) 2021-2022 YottaDB LLC and/or its subsidiaries.  #
 # All rights reserved.                                          #
 #                                                               #
 #   This source code contains the intellectual property         #
@@ -15,14 +15,14 @@
      <div class="q-pa-md">
     <div style="padding:5px">
       <q-breadcrumbs gutter="xs">
-          <q-breadcrumbs-el label="Home" icon="home" :to="'/'"/>
+        <q-breadcrumbs-el label="Home" icon="home" :to="'/'"/>
         <q-breadcrumbs-el  label="Running Processes" :to="'/processes'" icon="view_list"/>
-    </q-breadcrumbs>
-       <q-btn round style="margin-right:10px" size="md" icon="refresh"  :color="!$q.dark.isActive ? 'purple' : 'orange'"  @click="refreshProcesses">
+      </q-breadcrumbs>
+       <q-btn id="btn-refresh" round style="margin-right:10px" size="md" icon="refresh"  :color="!$q.dark.isActive ? 'purple' : 'orange'"  @click="refreshProcesses">
         <q-tooltip>
         Refresh running processes
         </q-tooltip>
-      </q-btn>   
+      </q-btn>
       <span class="text-center" style="font-size:28px;padding:25px"
         ></span
       >
@@ -36,7 +36,7 @@
         />
         <q-tooltip :offset="[0, 8]">QSpinnerGears</q-tooltip>
       </div>
-    <q-markup-table flat bordered v-if="!loading" style="max-height:calc(100vh - 190px)">
+    <q-markup-table id="processes_table" flat bordered v-if="!loading" style="max-height:calc(100vh - 190px)">
       <thead :class="$q.dark.isActive ? 'bg-purple text-white' : 'bg-orange text-white'">
         <tr>
           <th colspan="5">
@@ -48,7 +48,7 @@
                src="~assets/uc-1.png"
               />
 
-              <div class="text-h4 q-ml-md text-white">Running Processes</div>
+              <div id="processes_header" class="text-h4 q-ml-md text-white">Running Processes</div>
             </div>
           </th>
         </tr>
@@ -61,8 +61,8 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="process in processes" :key="'pid-'+process.PID">
-          <td class="text-left" v-if="typeof process.PID ==='number'"><router-link :to="'process/'+process.PID" :class="'text-orange'">{{process.PID}}</router-link></td>
+        <tr v-for="process in processes" :key="'pid-'+process.PID" class="table_row_processes_list">
+          <td class="text-left" v-if="typeof process.PID ==='number'"><q-btn flat :id="'btn-pid-'+process.PID"  :to="'/process/'+process.PID" :class="'table_cell_process text-orange'">{{process.PID}}</q-btn></td>
           <td class="text-left" v-else>{{process.PID}}</td>
           <td class="text-left">{{process.PN}}</td>
           <td class="text-left">{{process.DV}}</td>
