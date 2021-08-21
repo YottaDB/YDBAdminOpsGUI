@@ -14,6 +14,7 @@
 
 
 const puppeteer = require('puppeteer');
+const { PuppeteerScreenRecorder } = require('puppeteer-screen-recorder');
 const { expect } = require('chai');
 const _ = require('lodash');
 const globalVariables = _.pick(global, ['browser', 'expect']);
@@ -27,19 +28,31 @@ const opts = {
   timeout: 100000,
   args: ['--no-sandbox']
 };
+const Config = {
+  followNewTab: true,
+  fps: 25,
+  ffmpeg_Path: null,
+  videoFrame: {
+    width: 1024,
+    height: 768,
+  },
+  aspectRatio: '4:3',
+};
 
-// expose variables
 before (async function () {
   global.expect = expect;
   global.browser = await puppeteer.launch(opts);
   global.page = await global.browser.newPage();
-  await page.setViewport({ width: 1440, height: 900 });
+  global.recorder = new PuppeteerScreenRecorder(page);
+  await page.setViewport({ width: 1024, height: 768 });
   global.MDevPort = serverPort ;
+  await recorder.start('./tests/results/'+Date.now()+'.mp4');
 });
 
 // close browser and reset global variables
-after (function () {
-  browser.close();
+after (async function () {
+  await recorder.stop();
+  await browser.close();
   global.browser = globalVariables.browser;
   global.expect = globalVariables.expect;
 });

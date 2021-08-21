@@ -74,8 +74,8 @@ describe("Octo Module Tests", async () => {
     checkTableIsPopulated('ORDERS'),
     checkTableTotalCount('ORDERDETAILS',100),
     checkTableIsPopulated('CUSTOMERS'),
-    executeSQL('SELECT * FROM ORDERDETAILS;'),
-    checkTableTotalCount('ORDERDETAILS',518),
+    executeSQL('SELECT * FROM ORDERDETAILS limit 100;'),
+    checkTableTotalCount('ORDERDETAILS',100),
   ]);
 
 
