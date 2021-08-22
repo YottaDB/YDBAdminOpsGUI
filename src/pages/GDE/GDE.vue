@@ -14,30 +14,60 @@
 <template>
   <div class="q-pa-md" :key="pageKey" id="gdediv">
     <div style="padding:5px">
-      <q-breadcrumbs gutter="xs">
-      <q-breadcrumbs-el  label="Home" />
-      <q-breadcrumbs-el   label="System Administration" />
-      <q-breadcrumbs-el   label="Global Directory Editor (GDE)" />
-    </q-breadcrumbs>
-      <span :class="$q.dark.isActive?'text-orange':'text-purple'" style="font-size:28px;padding:25px"
+      <q-breadcrumbs gutter="xs" id="breadcrumbs">
+        <q-breadcrumbs-el label="Home" />
+        <q-breadcrumbs-el label="System Administration" />
+        <q-breadcrumbs-el label="Global Directory Editor (GDE)" />
+      </q-breadcrumbs>
+      <span
+        :class="$q.dark.isActive ? 'text-orange' : 'text-purple'"
+        style="font-size:28px;padding:25px"
+        id="gde_header"
         >Global Directory Editor (GDE)</span
       >
-      
-      <q-btn flat round style="margin-right:10px" size="md" icon="add"  :color="!$q.dark.isActive ? 'purple' : 'orange'"  @click="addDialog = true">
+
+      <q-btn
+        id="gde_btn_add_segment"
+        flat
+        round
+        style="margin-right:10px"
+        size="md"
+        icon="add"
+        :color="!$q.dark.isActive ? 'purple' : 'orange'"
+        @click="addDialog = true"
+      >
         <q-tooltip>
-        Add Segment,Region and Name
+          Add Segment,Region and Name
         </q-tooltip>
-      </q-btn>   
-      <q-btn flat round style="margin-right:10px" size="md" icon="text_snippet"  :color="!$q.dark.isActive ? 'purple' : 'orange'"  @click="createDialog = true">
+      </q-btn>
+      <q-btn
+        id="gde_btn_create_segment"
+        flat
+        round
+        style="margin-right:10px"
+        size="md"
+        icon="text_snippet"
+        :color="!$q.dark.isActive ? 'purple' : 'orange'"
+        @click="createDialog = true"
+      >
         <q-tooltip>
-        Create Database File
+          Create Database File
         </q-tooltip>
-      </q-btn>  
-      <q-btn flat round style="margin-right:10px" size="md" icon="delete"  :color="!$q.dark.isActive ? 'purple' : 'orange'"  @click="delDialog = true">
+      </q-btn>
+      <q-btn
+        id="gde_btn_delete_segment"
+        flat
+        round
+        style="margin-right:10px"
+        size="md"
+        icon="delete"
+        :color="!$q.dark.isActive ? 'purple' : 'orange'"
+        @click="delDialog = true"
+      >
         <q-tooltip>
-        Delete Segment,Region and Name
+          Delete Segment,Region and Name
         </q-tooltip>
-      </q-btn>   
+      </q-btn>
       <!--
           <q-fab
               icon="add"
@@ -64,57 +94,90 @@
               </q-fab-action>
             </q-fab>
             -->
-      <q-page-sticky style="z-index:9999999" position="bottom" :offset="[0, 18]"  v-if="!saved && verified && !errors">
-      <q-banner inline-actions class="text-black bg-warning" v-if="!saved && verified && !errors">
-        Changes are not saved yet, please click on "Apply" to save the changes!
-        <template v-slot:action>
-          <q-btn
-            flat
-            color="black"
-            icon="save"
-            label="Apply"
-            @click="savedata"
-          />
-        </template>
-      </q-banner>
-              </q-page-sticky>
+      <q-page-sticky
+        style="z-index:9999999"
+        position="bottom"
+        :offset="[0, 18]"
+        v-if="!saved && verified && !errors"
+      >
+        <q-banner
+          inline-actions
+          class="text-black bg-warning"
+          v-if="!saved && verified && !errors"
+        >
+          Changes are not saved yet, please click on "Apply" to save the
+          changes!
+          <template v-slot:action>
+            <q-btn
+              id="btn-apply-changes"
+              flat
+              color="black"
+              icon="save"
+              label="Apply"
+              @click="savedata"
+            />
+          </template>
+        </q-banner>
+      </q-page-sticky>
     </div>
     <!-- ********************************** NAMES-START ********************************************* -->
     <div style="padding:25px">
-    <q-table
-      title="Names"
-      :data="items"
-      :columns="fields"
-      row-key="name"
-      bordered
-      dense
-      virtual-scroll
-      :pagination.sync="pagination"
-      :rows-per-page-options="[0]"
-      :loading="loading"
-      tabindex="0"
-      selection="single"
-      :selected.sync="selectedName"
-      :hide-selected-banner="true"
-    >
-      <template v-slot:top>
-        <div :class="$q.dark.isActive?'bg-orange text-white row':'bg-purple text-white row'" style="width:100%">
-        <div style="padding:10px">
-          <span  style="font-size:21px;">Names</span>
-        </div>
-        <q-btn round icon="info" size="md" dense flat />
-        <q-space />
-        <div v-if="selectedName.length > 0">
-          <q-btn
-            icon="edit"
-            label="EDIT"
-            @click="
-              info(selectedName[0]);
-              editNameDialog = true;
+      <q-table
+        title="Names"
+        :data="items"
+        :columns="fields"
+        row-key="name"
+        bordered
+        dense
+        virtual-scroll
+        :pagination.sync="paginationNames"
+        :rows-per-page-options="[0]"
+        :loading="loading"
+        tabindex="0"
+        selection="single"
+        :selected.sync="selectedName"
+        :hide-selected-banner="true"
+        ref="tablenames"
+      >
+        <template v-slot:header="props">
+          <q-tr :props="props">
+            <q-th />
+            <q-th
+              v-for="col in props.cols"
+              :key="col.name"
+              :props="props"
+              :class="'gde-name-table-header-' + col.name"
+            >
+              {{ col.label }}
+            </q-th>
+          </q-tr>
+        </template>
+        <template v-slot:top>
+          <div
+            :class="
+              $q.dark.isActive
+                ? 'bg-orange text-white row'
+                : 'bg-purple text-white row'
             "
-            flat
-          />
-          <!--
+            style="width:100%"
+          >
+            <div style="padding:10px">
+              <span style="font-size:21px;">Names</span>
+            </div>
+            <q-btn round icon="info" size="md" dense flat />
+            <q-space />
+            <div v-if="selectedName.length > 0">
+              <q-btn
+                id="gde_name_btn_edit"
+                icon="edit"
+                label="EDIT"
+                @click="
+                  info(selectedName[0]);
+                  editNameDialog = true;
+                "
+                flat
+              />
+              <!--
           <q-btn
             icon="delete"
             label="DELETE"
@@ -124,111 +187,169 @@
             v-if="show(selectedName[0])"
           />
           -->
-        </div>
-        </div>
-      </template>
-      <template v-slot:body-cell-region="props">
-        <q-td :props="props">
-          <div>
-            <q-badge
-              style="max-width:150px"
-              color="orange"
-              :label="props.value"
+            </div>
+          </div>
+        </template>
+        <template v-slot:body-selection="scope">
+          <q-toggle size="xs" dense v-model="scope.selected"></q-toggle
+          ><q-btn
+            @click="scope.selected = !scope.selected"
+            flat
+            :data-name-action-trigger="scope.key"
+            :id="'gde' + scope.key"
+            :class="'gde' + scope.key"
+            dense
+            size="xs"
+          />
+        </template>
+        <template v-slot:body-cell-region="props">
+          <q-td :props="props">
+            <div>
+              <q-badge
+                style="max-width:150px"
+                color="orange"
+                :label="props.value"
+                class="gde_name_mapping"
+              />
+            </div>
+          </q-td>
+        </template>
+        <template v-slot:body-cell-segment="props">
+          <q-td :props="props">
+            <div>
+              <q-badge
+                style="max-width:150px"
+                color="purple"
+                :label="props.value"
+              />
+            </div>
+          </q-td>
+        </template>
+      </q-table>
+      <q-dialog
+        v-model="editNameDialog"
+        persistent
+        v-if="selectedName.length > 0"
+      >
+        <q-card style="min-width: 350px">
+          <q-card-section>
+            <div class="text-h6">Edit {{ selectedName[0].name }} Name</div>
+          </q-card-section>
+
+          <q-card-section class="q-pt-none">
+            <q-input
+              class="selectedItem-name-NAME"
+              :data-test-name-edit-value="selectedItem.name.NAME"
+              outlined
+              disable
+              label="Name"
+              v-model="selectedItem.name.NAME"
+              :value="selectedItem.name.NAME"
+              :dense="true"
             />
-          </div>
-        </q-td>
-      </template>
-      <template v-slot:body-cell-segment="props">
-        <q-td :props="props">
-          <div>
-            <q-badge style="max-width:150px" color="purple" :label="props.value" />
-          </div>
-        </q-td>
-      </template>
-    </q-table>
-    <q-dialog v-model="editNameDialog" persistent v-if="selectedName.length > 0">
-      <q-card style="min-width: 350px">
-        <q-card-section>
-          <div class="text-h6">Edit {{selectedName[0].name}} Name</div>
-        </q-card-section>
+          </q-card-section>
+          <q-card-section class="q-pt-none">
+            <q-select
+              outlined
+              id="selectedItem-name-REGION"
+              :options="Object.keys(regions)"
+              label="Region"
+              v-model="selectedItem.name.REGION"
+              :value="selectedItem.name.REGION"
+              :dense="true"
+              option-label="text"
+              map-options
+              emit-value
+            />
+          </q-card-section>
 
-        <q-card-section class="q-pt-none">
-          <q-input
-            outlined
-            disable
-            label="Name"
-            v-model="selectedItem.name.NAME"
-            :value="selectedItem.name.NAME"
-            :dense="true"
-          />
-        </q-card-section>
-        <q-card-section class="q-pt-none">
-          <q-select
-            outlined
-            id="region"
-            :options="Object.keys(regions)"
-            label="Region"
-            v-model="selectedItem.name.REGION"
-            :value="selectedItem.name.REGION"
-            :dense="true"
-            option-label="text"
-            map-options
-            emit-value
-          />
-        </q-card-section>
-
-        <q-card-actions align="right" class="text-primary">
-          <q-btn flat label="Cancel" color="warning" @click="cancel()" />
-          <q-btn flat label="OK" @click="ok('name')" />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
+          <q-card-actions align="right" class="text-primary">
+            <q-btn flat label="Cancel" color="warning" @click="cancel()" />
+            <q-btn
+              flat
+              label="OK"
+              @click="ok('name')"
+              id="selectedItem-name-REGION-btn"
+            />
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
     </div>
-  <!-- ********************************** NAMES-END ********************************************* -->
-  <!-- ********************************** REGIONS-START ***************************************** -->
- <div style="padding:25px">
- <q-table
-      title="Regions"
-      :data="regionItems"
-      :columns="regionFields"
-      row-key="name"
-      bordered
-      dense
-      virtual-scroll
-      :pagination.sync="pagination"
-      :rows-per-page-options="[0]"
-      :loading="loading"
-      tabindex="0"
-      selection="single"
-      :selected.sync="selectedRegion"
-      :hide-selected-banner="true"
-    >
-      <template v-slot:top>
-        <div :class="$q.dark.isActive?'bg-orange text-white row':'bg-purple text-white row'" style="width:100%">
-        <div style="padding:10px">
-          <span class="text-center" style="font-size:21px;">Regions</span>
-        </div>
-        <q-btn round icon="info" size="md" dense flat />
-        <q-space />
-        <div v-if="selectedRegion.length > 0">
-                   <q-btn
-            icon="preview"
-            label="DETAILS"
-            @click="
-              showDetailsRegionDialog = true;
-            "
+    <!-- ********************************** NAMES-END ********************************************* -->
+    <!-- ********************************** REGIONS-START ***************************************** -->
+    <div style="padding:25px">
+      <q-table
+        title="Regions"
+        :data="regionItems"
+        :columns="regionFields"
+        row-key="name"
+        bordered
+        dense
+        virtual-scroll
+        :pagination.sync="paginationRegions"
+        :rows-per-page-options="[0]"
+        :loading="loading"
+        tabindex="0"
+        selection="single"
+        :selected.sync="selectedRegion"
+        :hide-selected-banner="true"
+        ><template v-slot:header="props">
+          <q-tr :props="props">
+            <q-th />
+            <q-th
+              v-for="col in props.cols"
+              :key="col.name"
+              :props="props"
+              :class="'gde-segment-table-header-' + col.name"
+            >
+              {{ col.label }}
+            </q-th>
+          </q-tr>
+        </template>
+        <template v-slot:body-selection="scope">
+          <q-toggle size="xs" dense v-model="scope.selected"></q-toggle
+          ><q-btn
+            @click="scope.selected = !scope.selected"
             flat
+            :data-name-action-trigger="scope.key"
+            :id="'gde-data-region-action-class-' + scope.key"
+            dense
+            size="xs"
           />
-          <q-btn
-            icon="edit"
-            label="EDIT"
-            @click="
-              info(selectedRegion[0]);
-              editRegionDialog = true;
+        </template>
+        <template v-slot:top>
+          <div
+            :class="
+              $q.dark.isActive
+                ? 'bg-orange text-white row'
+                : 'bg-purple text-white row'
             "
-            flat
-          />
-          <!--
+            style="width:100%"
+          >
+            <div style="padding:10px">
+              <span class="text-center" style="font-size:21px;">Regions</span>
+            </div>
+            <q-btn round icon="info" size="md" dense flat />
+            <q-space />
+            <div v-if="selectedRegion.length > 0">
+              <q-btn
+                icon="preview"
+                label="DETAILS"
+                id="gde_region_btn_details"
+                @click="showDetailsRegionDialog = true"
+                flat
+              />
+              <q-btn
+                class="gde_region_btn_edit"
+                icon="edit"
+                label="EDIT"
+                @click="
+                  info(selectedRegion[0]);
+                  editRegionDialog = true;
+                "
+                flat
+              />
+              <!--
           <q-btn
             icon="delete"
             label="DELETE"
@@ -238,38 +359,51 @@
             v-if="show(selectedRegion[0])"
           />
           -->
-        </div>
-        </div>
-      </template>
-      <template v-slot:body-cell-name="props">
-        <q-td :props="props">
-          <div>
-            <q-badge style="max-width:100px" color="orange" :label="props.value" />
+            </div>
           </div>
-        </q-td>
-      </template>
-      <template v-slot:body-cell-segment="props">
-        <q-td :props="props">
-          <div>
-            <q-badge style="max-width:100px" color="purple" :label="props.value" />
-          </div>
-        </q-td>
-      </template>
-    </q-table>
- </div>
-     <q-dialog v-model="editRegionDialog" persistent v-if="selectedRegion.length>0">
-      <q-card style="min-width: 350px">
+        </template>
+        <template v-slot:body-cell-name="props">
+          <q-td :props="props">
+            <div>
+              <q-badge
+                style="max-width:100px"
+                color="orange"
+                :label="props.value"
+                class="gde_region_mapping"
+              />
+            </div>
+          </q-td>
+        </template>
+        <template v-slot:body-cell-segment="props">
+          <q-td :props="props">
+            <div>
+              <q-badge
+                style="max-width:100px"
+                color="purple"
+                :label="props.value"
+              />
+            </div>
+          </q-td>
+        </template>
+      </q-table>
+    </div>
+    <q-dialog
+      v-model="editRegionDialog"
+      persistent
+      v-if="selectedRegion.length > 0"
+    >
+      <q-card style="min-width: 350px" id="edit-region-dialog">
         <q-card-section>
-          <div class="text-h6">Edit {{selectedRegion[0].name}} Region</div>
+          <div class="text-h6">Edit {{ selectedRegion[0].name }} Region</div>
         </q-card-section>
 
         <q-card-section class="q-pt-none">
           <q-input
             outlined
             label="Region"
-               id="region"
-                v-model="selectedItem.region.NAME"
-                :value="selectedItem.region.NAME"
+            id="region"
+            v-model="selectedItem.region.NAME"
+            :value="selectedItem.region.NAME"
             :dense="true"
           />
         </q-card-section>
@@ -288,33 +422,53 @@
           />
         </q-card-section>
         <q-card-section class="q-pt-none">
-           <q-checkbox right-label label="AutoDB" v-model="selectedItem.region.AUTODB" />
+          <q-checkbox
+            right-label
+            label="AutoDB"
+            v-model="selectedItem.region.AUTODB"
+          />
         </q-card-section>
         <q-card-section class="q-pt-none">
           <q-input
             outlined
             label="Collation Default"
-                v-model="selectedItem.region.COLLATION_DEFAULT"
+            v-model="selectedItem.region.COLLATION_DEFAULT"
             :dense="true"
           />
         </q-card-section>
         <q-card-section class="q-pt-none">
-           <q-checkbox right-label label="Epoch Taper" v-model="selectedItem.region.EPOCHTAPER" />
-           <q-checkbox right-label label="Instance Freeze on Error"  v-model="selectedItem.region.INST_FREEZE_ON_ERROR" />
-           <q-checkbox right-label label="Enable Journal" v-model="selectedItem.region.JOURNAL" />
+          <q-checkbox
+            right-label
+            label="Epoch Taper"
+            v-model="selectedItem.region.EPOCHTAPER"
+          />
+          <q-checkbox
+            right-label
+            label="Instance Freeze on Error"
+            v-model="selectedItem.region.INST_FREEZE_ON_ERROR"
+          />
+          <q-checkbox
+            right-label
+            label="Enable Journal"
+            v-model="selectedItem.region.JOURNAL"
+          />
         </q-card-section>
-       <q-card-section class="q-pt-none">
+        <q-card-section class="q-pt-none">
           <q-input
             outlined
             label="Auto Switch Limit"
-                 v-model="selectedItem.region.AUTOSWITCHLIMIT"
+            v-model="selectedItem.region.AUTOSWITCHLIMIT"
             :dense="true"
           />
         </q-card-section>
-               <q-card-section class="q-pt-none">
-           <q-checkbox right-label label="Before Image" v-model="selectedItem.region.BEFORE_IMAGE" />
+        <q-card-section class="q-pt-none">
+          <q-checkbox
+            right-label
+            label="Before Image"
+            v-model="selectedItem.region.BEFORE_IMAGE"
+          />
         </q-card-section>
-            <q-card-section class="q-pt-none">
+        <q-card-section class="q-pt-none">
           <q-input
             outlined
             label="Journal File Name"
@@ -322,23 +476,40 @@
             :dense="true"
           />
         </q-card-section>
-                   <q-card-section class="q-pt-none">
+        <q-card-section class="q-pt-none">
           <q-input
+            class="region-edit-key-size"
             outlined
             label="Key Size (bytes)"
             v-model="selectedItem.region.KEY_SIZE"
             :dense="true"
           />
         </q-card-section>
-         <q-card-section class="q-pt-none">
-           <q-checkbox right-label label="Lock Crit Separate" v-model="selectedItem.region.LOCK_CRIT_SEPARATE" />
-           <q-checkbox right-label label="Quick Database Rundown"  v-model="selectedItem.region.QDBRUNDOWN" />
+        <q-card-section class="q-pt-none">
+          <q-checkbox
+            right-label
+            label="Lock Crit Separate"
+            v-model="selectedItem.region.LOCK_CRIT_SEPARATE"
+          />
+          <q-checkbox
+            right-label
+            label="Quick Database Rundown"
+            v-model="selectedItem.region.QDBRUNDOWN"
+          />
         </q-card-section>
         <q-card-section class="q-pt-none">
-           <q-checkbox right-label label="Region Stats" v-model="selectedItem.region.STATS" />
-           <q-checkbox right-label label="Standard Null Collation" v-model="selectedItem.region.STDNULLCOLL" />
+          <q-checkbox
+            right-label
+            label="Region Stats"
+            v-model="selectedItem.region.STATS"
+          />
+          <q-checkbox
+            right-label
+            label="Standard Null Collation"
+            v-model="selectedItem.region.STDNULLCOLL"
+          />
         </q-card-section>
-              <q-card-section class="q-pt-none">
+        <q-card-section class="q-pt-none">
           <q-select
             outlined
             :options="regionNullSubscriptsOptions"
@@ -353,6 +524,7 @@
         </q-card-section>
         <q-card-section class="q-pt-none">
           <q-input
+            class="region-edit-record-size"
             outlined
             label="Record Size (bytes)"
             v-model="selectedItem.region.RECORD_SIZE"
@@ -361,118 +533,154 @@
         </q-card-section>
         <q-card-actions align="right" class="text-primary">
           <q-btn flat label="Cancel" color="warning" @click="cancel()" />
-          <q-btn flat label="OK" @click="ok('region')" />
+          <q-btn
+            flat
+            label="OK"
+            @click="ok('region')"
+            class="edit-region-details"
+          />
         </q-card-actions>
       </q-card>
     </q-dialog>
-    <q-dialog v-model="showDetailsRegionDialog" persistent v-if="selectedRegion.length>0">
-      <q-card style="min-width: 350px">
+    <q-dialog
+      v-model="showDetailsRegionDialog"
+      persistent
+      v-if="selectedRegion.length > 0"
+    >
+      <q-card style="min-width: 350px" id="region-details-dialog">
         <q-card-section>
-          <div class="text-h6">Region {{selectedRegion[0].name}} Details</div>
+          <div class="text-h6">Region {{ selectedRegion[0].name }} Details</div>
         </q-card-section>
         <q-card-section>
           <div class="q-pa-md">
-    <q-markup-table>
-      <tbody>
-        <tr>
-          <td class="text-left"><b>Journal Extension Count</b></td>
-          <td class="text-right">{{selectedRegion[0].extensionCount}}</td>
-        </tr>
-        <tr>
-          <td class="text-left"><b>Journal Auto Switch Limit</b></td>
-          <td class="text-right">{{selectedRegion[0].autoSwitchLimit}}</td>
-        </tr>
-        <tr>
-          <td class="text-left"><b>Default Collation</b></td>
-          <td class="text-right">{{selectedRegion[0].defaultCollation}}</td>
-        </tr>
-        <tr>
-          <td class="text-left"><b>Stats</b></td>
-          <td class="text-right">{{selectedRegion[0].stats}}</td>
-        </tr>
-     <tr>
-          <td class="text-left"><b>AutoDB</b></td>
-          <td class="text-right">{{selectedRegion[0].autodb}}</td>
-        </tr>
-        <tr>
-          <td class="text-left"><b>Lock Crit</b></td>
-          <td class="text-right">{{selectedRegion[0].lockCrit}}</td>
-        </tr>
-        <tr>
-          <td class="text-left"><b>Null Subscripts</b></td>
-          <td class="text-right">{{selectedRegion[0].nullSubscripts}}</td>
-        </tr>
-        <tr>
-          <td class="text-left"><b>Standard Null Collation</b></td>
-          <td class="text-right">{{selectedRegion[0].standardNullCollation}}</td>
-        </tr>
-        <tr>
-          <td class="text-left"><b>Instance Freeze On Error</b></td>
-          <td class="text-right">{{selectedRegion[0].instFreezeOnError}}</td>
-        </tr>
-        <tr>
-          <td class="text-left"><b>Qdb Rundown</b></td>
-          <td class="text-right">{{selectedRegion[0].qDbRundown}}</td>
-        </tr>
-        <tr>
-          <td class="text-left"><b>Epoch Taper</b></td>
-          <td class="text-right">{{selectedRegion[0].epochTaper}}</td>
-        </tr>
-      </tbody>
-    </q-markup-table>
-  </div>
+            <q-markup-table>
+              <tbody>
+                <tr>
+                  <td class="text-left"><b>Journal Extension Count</b></td>
+                  <td class="text-right">
+                    {{ selectedRegion[0].extensionCount }}
+                  </td>
+                </tr>
+                <tr>
+                  <td class="text-left"><b>Journal Auto Switch Limit</b></td>
+                  <td class="text-right">
+                    {{ selectedRegion[0].autoSwitchLimit }}
+                  </td>
+                </tr>
+                <tr>
+                  <td class="text-left"><b>Default Collation</b></td>
+                  <td class="text-right">
+                    {{ selectedRegion[0].defaultCollation }}
+                  </td>
+                </tr>
+                <tr>
+                  <td class="text-left"><b>Stats</b></td>
+                  <td class="text-right">{{ selectedRegion[0].stats }}</td>
+                </tr>
+                <tr>
+                  <td class="text-left"><b>AutoDB</b></td>
+                  <td class="text-right">{{ selectedRegion[0].autodb }}</td>
+                </tr>
+                <tr>
+                  <td class="text-left"><b>Lock Crit</b></td>
+                  <td class="text-right">{{ selectedRegion[0].lockCrit }}</td>
+                </tr>
+                <tr>
+                  <td class="text-left"><b>Null Subscripts</b></td>
+                  <td class="text-right">
+                    {{ selectedRegion[0].nullSubscripts }}
+                  </td>
+                </tr>
+                <tr>
+                  <td class="text-left"><b>Standard Null Collation</b></td>
+                  <td class="text-right">
+                    {{ selectedRegion[0].standardNullCollation }}
+                  </td>
+                </tr>
+                <tr>
+                  <td class="text-left"><b>Instance Freeze On Error</b></td>
+                  <td class="text-right">
+                    {{ selectedRegion[0].instFreezeOnError }}
+                  </td>
+                </tr>
+                <tr>
+                  <td class="text-left"><b>Qdb Rundown</b></td>
+                  <td class="text-right">{{ selectedRegion[0].qDbRundown }}</td>
+                </tr>
+                <tr>
+                  <td class="text-left"><b>Epoch Taper</b></td>
+                  <td class="text-right">{{ selectedRegion[0].epochTaper }}</td>
+                </tr>
+              </tbody>
+            </q-markup-table>
+          </div>
         </q-card-section>
         <q-card-actions align="right" class="text-primary">
-          <q-btn flat label="OK" @click="showDetailsRegionDialog = false" />
+          <q-btn
+            flat
+            label="OK"
+            @click="showDetailsRegionDialog = false"
+            id="region-details-dialog-btn-ok"
+          />
         </q-card-actions>
       </q-card>
     </q-dialog>
- <!-- ********************************** REGIONS-END ***************************************** -->
- <!-- ********************************** SEGMENTS-START ************************************** -->
+    <!-- ********************************** REGIONS-END ***************************************** -->
+    <!-- ********************************** SEGMENTS-START ************************************** -->
 
-<div style="padding:25px">
- <q-table
-      title="Segments"
-      :data="segmentItems"
-      :columns="segmentFields"
-      row-key="name"
-      bordered
-      dense
-      virtual-scroll
-      :pagination.sync="pagination"
-      :rows-per-page-options="[0]"
-      :loading="loading"
-      tabindex="0"
-      selection="single"
-      :selected.sync="selectedSegment"
-      :hide-selected-banner="true"
-    >
-      <template v-slot:top>
-        <div :class="$q.dark.isActive?'bg-orange text-white row':'bg-purple text-white row'" style="width:100%">
-        <div style="padding:10px">
-          <span class="text-center" style="font-size:21px;">Segments</span>
-        </div>
-        <q-btn round icon="info" size="md" dense flat />
-        <q-space />
-        <div v-if="selectedSegment.length > 0">
-                   <q-btn
-            icon="preview"
-            label="DETAILS"
-            @click="
-              showDetailsSegmentDialog = true;
+    <div style="padding:25px">
+      <q-table
+        title="Segments"
+        :data="segmentItems"
+        :columns="segmentFields"
+        row-key="name"
+        bordered
+        dense
+        virtual-scroll
+        :pagination.sync="paginationSegments"
+        :rows-per-page-options="[0]"
+        :loading="loading"
+        tabindex="0"
+        selection="single"
+        :selected.sync="selectedSegment"
+        :hide-selected-banner="true"
+      >
+        <template v-slot:body-selection="scope">
+          <div :data-region-action-trigger="scope.key">
+            <q-toggle size="xs" dense v-model="scope.selected" />
+          </div>
+        </template>
+        <template v-slot:top>
+          <div
+            :class="
+              $q.dark.isActive
+                ? 'bg-orange text-white row'
+                : 'bg-purple text-white row'
             "
-            flat
-          />
-          <q-btn
-            icon="edit"
-            label="EDIT"
-            @click="
-              info(selectedSegment[0]);
-              editSegmentDialog = true;
-            "
-            flat
-          />
-          <!--
+            style="width:100%"
+          >
+            <div style="padding:10px">
+              <span class="text-center" style="font-size:21px;">Segments</span>
+            </div>
+            <q-btn round icon="info" size="md" dense flat />
+            <q-space />
+            <div v-if="selectedSegment.length > 0">
+              <q-btn
+                icon="preview"
+                label="DETAILS"
+                @click="showDetailsSegmentDialog = true"
+                flat
+              />
+              <q-btn
+                icon="edit"
+                label="EDIT"
+                @click="
+                  info(selectedSegment[0]);
+                  editSegmentDialog = true;
+                "
+                flat
+              />
+              <!--
           <q-btn
             icon="delete"
             label="DELETE"
@@ -482,22 +690,31 @@
             v-if="show(selectedSegment[0])"
           />
           -->
-        </div>
-        </div>
-      </template>
-      <template v-slot:body-cell-name="props">
-        <q-td :props="props">
-          <div>
-            <q-badge style="max-width:100px" color="purple" :label="props.value" />
+            </div>
           </div>
-        </q-td>
-      </template>
-    </q-table>
- </div>
-      <q-dialog v-model="editSegmentDialog" persistent v-if="selectedSegment.length>0">
+        </template>
+        <template v-slot:body-cell-name="props">
+          <q-td :props="props">
+            <div>
+              <q-badge
+                style="max-width:100px"
+                color="purple"
+                :label="props.value"
+                class="gde_segment_mapping"
+              />
+            </div>
+          </q-td>
+        </template>
+      </q-table>
+    </div>
+    <q-dialog
+      v-model="editSegmentDialog"
+      persistent
+      v-if="selectedSegment.length > 0"
+    >
       <q-card style="min-width: 350px">
         <q-card-section>
-          <div class="text-h6">Edit {{selectedSegment[0].name}} Segment</div>
+          <div class="text-h6">Edit {{ selectedSegment[0].name }} Segment</div>
         </q-card-section>
 
         <q-card-section class="q-pt-none">
@@ -541,7 +758,11 @@
           />
         </q-card-section>
         <q-card-section class="q-pt-none">
-           <q-checkbox right-label label="Async IO" v-model="selectedItem.segment.ASYNCIO" />
+          <q-checkbox
+            right-label
+            label="Async IO"
+            v-model="selectedItem.segment.ASYNCIO"
+          />
         </q-card-section>
         <q-card-section class="q-pt-none">
           <q-input
@@ -552,10 +773,18 @@
           />
         </q-card-section>
         <q-card-section class="q-pt-none">
-           <q-checkbox right-label label="Defer Allocate" v-model="selectedItem.segment.DEFER_ALLOCATE" />
-           <q-checkbox right-label label="Encryption"  v-model="selectedItem.segment.ENCRYPTION_FLAG" />
+          <q-checkbox
+            right-label
+            label="Defer Allocate"
+            v-model="selectedItem.segment.DEFER_ALLOCATE"
+          />
+          <q-checkbox
+            right-label
+            label="Encryption"
+            v-model="selectedItem.segment.ENCRYPTION_FLAG"
+          />
         </q-card-section>
-       <q-card-section class="q-pt-none">
+        <q-card-section class="q-pt-none">
           <q-input
             outlined
             label="Extension Count"
@@ -568,11 +797,11 @@
           <q-input
             outlined
             label="Global Buffer Count (blocks)"
-             v-model="selectedItem.segment.GLOBAL_BUFFER_COUNT"
+            v-model="selectedItem.segment.GLOBAL_BUFFER_COUNT"
             :dense="true"
           />
         </q-card-section>
-             <q-card-section class="q-pt-none">
+        <q-card-section class="q-pt-none">
           <q-input
             outlined
             label="Lock Space (pages)"
@@ -580,7 +809,7 @@
             :dense="true"
           />
         </q-card-section>
-             <q-card-section class="q-pt-none">
+        <q-card-section class="q-pt-none">
           <q-input
             outlined
             label="Mutex Slots"
@@ -588,7 +817,7 @@
             :dense="true"
           />
         </q-card-section>
-             <q-card-section class="q-pt-none">
+        <q-card-section class="q-pt-none">
           <q-input
             outlined
             label="Reserved Bytes"
@@ -599,150 +828,206 @@
         <q-card-actions align="right" class="text-primary">
           <q-btn flat label="Cancel" color="warning" @click="cancel()" />
           <q-btn flat label="OK" @click="ok('segment')" />
-          
         </q-card-actions>
       </q-card>
     </q-dialog>
-     <q-dialog v-model="showDetailsSegmentDialog" persistent v-if="selectedSegment.length>0">
+    <q-dialog
+      v-model="showDetailsSegmentDialog"
+      persistent
+      v-if="selectedSegment.length > 0"
+    >
       <q-card style="min-width: 350px">
         <q-card-section>
-          <div class="text-h6">Segment {{selectedSegment[0].name}} Details</div>
+          <div class="text-h6">
+            Segment {{ selectedSegment[0].name }} Details
+          </div>
         </q-card-section>
         <q-card-section>
           <div class="q-pa-md">
-    <q-markup-table>
-      <tbody>
-        <tr>
-          <td class="text-left"><b>Reserved Bytes</b></td>
-          <td class="text-right">{{selectedSegment[0].reservedBytes}}</td>
-        </tr>
-        <tr>
-          <td class="text-left"><b>Encryption</b></td>
-          <td class="text-right">{{selectedSegment[0].encryption}}</td>
-        </tr>
-        <tr>
-          <td class="text-left"><b>Mutex Slots</b></td>
-          <td class="text-right">{{selectedSegment[0].mutexSlots}}</td>
-        </tr>
-        <tr>
-          <td class="text-left"><b>Defer Allocation</b></td>
-          <td class="text-right">{{selectedSegment[0].deferAllocate}}</td>
-        </tr>
-     <tr>
-          <td class="text-left"><b>Async IO</b></td>
-          <td class="text-right">{{selectedSegment[0].asyncIO}}</td>
-        </tr>
-      </tbody>
-    </q-markup-table>
-  </div>
+            <q-markup-table>
+              <tbody>
+                <tr>
+                  <td class="text-left"><b>Reserved Bytes</b></td>
+                  <td class="text-right">
+                    {{ selectedSegment[0].reservedBytes }}
+                  </td>
+                </tr>
+                <tr>
+                  <td class="text-left"><b>Encryption</b></td>
+                  <td class="text-right">
+                    {{ selectedSegment[0].encryption }}
+                  </td>
+                </tr>
+                <tr>
+                  <td class="text-left"><b>Mutex Slots</b></td>
+                  <td class="text-right">
+                    {{ selectedSegment[0].mutexSlots }}
+                  </td>
+                </tr>
+                <tr>
+                  <td class="text-left"><b>Defer Allocation</b></td>
+                  <td class="text-right">
+                    {{ selectedSegment[0].deferAllocate }}
+                  </td>
+                </tr>
+                <tr>
+                  <td class="text-left"><b>Async IO</b></td>
+                  <td class="text-right">{{ selectedSegment[0].asyncIO }}</td>
+                </tr>
+              </tbody>
+            </q-markup-table>
+          </div>
         </q-card-section>
         <q-card-actions align="right" class="text-primary">
-          <q-btn flat label="OK" @click="showDetailsSegmentDialog = false" />
+          <q-btn
+            flat
+            label="OK"
+            @click="showDetailsSegmentDialog = false"
+            class="region-edit-dialog-btn-ok"
+          />
         </q-card-actions>
       </q-card>
     </q-dialog>
 
- <!-- ********************************** SEGMENTS-END **************************************** -->
- <!-- ********************************** MAP-START ******************************************* -->
-<div style="padding:25px">
-<q-table
-      title="Global Mapping"
-      :data="map"
-      :columns="mapFields"
-      row-key="name"
-      bordered
-      dense
-      virtual-scroll
-      :pagination.sync="pagination"
-      :rows-per-page-options="[0]"
-      :loading="loading"
-      tabindex="0"
-      :hide-selected-banner="true"
+    <!-- ********************************** SEGMENTS-END **************************************** -->
+    <!-- ********************************** MAP-START ******************************************* -->
+    <div style="padding:25px">
+      <q-table
+        title="Global Mapping"
+        :data="map"
+        :columns="mapFields"
+        row-key="name"
+        bordered
+        dense
+        virtual-scroll
+        :pagination.sync="paginationMap"
+        :rows-per-page-options="[0]"
+        :loading="loading"
+        tabindex="0"
+        :hide-selected-banner="true"
+      >
+        <template v-slot:top>
+          <div
+            :class="
+              $q.dark.isActive
+                ? 'bg-orange text-white row'
+                : 'bg-purple text-white row'
+            "
+            style="width:100%"
+          >
+            <div style="padding:10px">
+              <span class="text-center" style="font-size:21px;"
+                >Global Mapping</span
+              >
+            </div>
+            <q-btn round icon="info" size="md" dense flat />
+            <q-space />
+          </div>
+        </template>
+        <template v-slot:body-cell-segment="props">
+          <q-td :props="props">
+            <div>
+              <q-badge
+                style="max-width:100px"
+                color="purple"
+                :label="props.value"
+                class="gde_map_mapping"
+              />
+            </div>
+          </q-td>
+        </template>
+        <template v-slot:body-cell-region="props">
+          <q-td :props="props">
+            <div>
+              <q-badge
+                style="max-width:100px"
+                color="orange"
+                :label="props.value"
+              />
+            </div>
+          </q-td>
+        </template>
+      </q-table>
+    </div>
+    <!-- ********************************** MAP-END ********************************************* -->
+    <!-- ********************************** ADD NEW START**************************************** -->
+    <q-dialog
+      v-model="addDialog"
+      persistent
+      @keyup.enter="addNewSegmentAndFile"
     >
-      <template v-slot:top>
-        <div :class="$q.dark.isActive?'bg-orange text-white row':'bg-purple text-white row'" style="width:100%">
-        <div style="padding:10px">
-          <span class="text-center" style="font-size:21px;">Global Mapping</span>
-        </div>
-        <q-btn round icon="info" size="md" dense flat />
-        <q-space />
-        </div>
-      </template>
-      <template v-slot:body-cell-segment="props">
-        <q-td :props="props">
-          <div>
-            <q-badge style="max-width:100px" color="purple" :label="props.value" />
-          </div>
-        </q-td>
-      </template>
-      <template v-slot:body-cell-region="props">
-        <q-td :props="props">
-          <div>
-            <q-badge style="max-width:100px" color="orange" :label="props.value" />
-          </div>
-        </q-td>
-      </template>
-    </q-table>
-</div>
- <!-- ********************************** MAP-END ********************************************* -->
- <!-- ********************************** ADD NEW START**************************************** -->
- <q-dialog v-model="addDialog" persistent>
       <q-card style="min-width: 350px">
         <q-card-section>
           <div class="text-h6">Add Segment, Region and Name</div>
         </q-card-section>
-          <q-card-section class="q-pt-none">
+        <q-card-section class="q-pt-none">
           <q-input
+            class="gde_input_add_segment_field"
             outlined
             label="Name"
             ref="addSegmentField"
             v-model="addSegment"
             :rules="[val => !!val || 'Field is required']"
             :dense="true"
+            @keyup.enter="addNewSegmentAndFile"
           />
         </q-card-section>
         <q-card-section class="q-pt-none">
           <q-input
+            class="gde_input_add_segment_file_field"
             ref="addFileField"
             outlined
             label="File"
             :rules="[val => !!val || 'Field is required']"
             v-model="addFile"
             :dense="true"
+            @keyup.enter="addNewSegmentAndFile"
           />
         </q-card-section>
-         <q-card-actions align="right" class="text-primary">
-           <q-btn flat label="Cancel" color="warning" @click="addDialog=false" />
-          <q-btn  flat label="OK" @click="addNewSegmentAndFile"/> 
+        <q-card-actions align="right" class="text-primary">
+          <q-btn
+            flat
+            label="Cancel"
+            color="warning"
+            @click="addDialog = false"
+          />
+          <q-btn flat label="OK" @click="addNewSegmentAndFile" />
         </q-card-actions>
       </q-card>
- </q-dialog>
- <q-dialog v-model="addStatusDialog">
-      <q-card>
+    </q-dialog>
+    <q-dialog v-model="addStatusDialog">
+      <q-card id="gde_add_status_dialog">
         <q-bar :class="!$q.dark.isActive ? 'bg-purple' : 'bg-orange'">
           <span class="text-white">Status</span>
           <q-space />
         </q-bar>
 
-        <q-card-section >
-           <pre v-html="addStatusMessage"></pre>
+        <q-card-section>
+          <pre v-html="addStatusMessage"></pre>
         </q-card-section>
 
-          <q-card-actions align="right" class="text-primary">
-            
-          <q-btn flat label="OK" @click="addStatusDialog=false;addDialog=false"/> 
+        <q-card-actions align="right" class="text-primary">
+          <q-btn
+            flat
+            label="OK"
+            id="gde_input_add_segment_ok_button"
+            @click="
+              addStatusDialog = false;
+              addDialog = false;
+            "
+          />
         </q-card-actions>
       </q-card>
- </q-dialog>
+    </q-dialog>
 
- <!-- ********************************** ADD NEW END ***************************************** -->
-  <!-- ********************************** DELETE START**************************************** -->
- <q-dialog v-model="delDialog" persistent>
+    <!-- ********************************** ADD NEW END ***************************************** -->
+    <!-- ********************************** DELETE START**************************************** -->
+    <q-dialog v-model="delDialog" persistent>
       <q-card style="min-width: 350px">
         <q-card-section>
           <div class="text-h6">Delete Segment, Region and Name</div>
         </q-card-section>
-          <q-card-section class="q-pt-none">
+        <q-card-section class="q-pt-none">
           <q-select
             outlined
             label="Name"
@@ -756,38 +1041,90 @@
             emit-value
           />
         </q-card-section>
-         <q-card-actions align="right" class="text-primary">
-           <q-btn flat label="Cancel" color="warning" @click="delDialog=false" />
-          <q-btn  flat label="OK" @click="delSegmentAndName"/> 
+        <q-card-actions align="right" class="text-primary">
+          <q-btn
+            flat
+            label="Cancel"
+            color="warning"
+            @click="delDialog = false"
+          />
+          <q-btn flat label="OK" @click="delSegmentAndName" />
         </q-card-actions>
       </q-card>
- </q-dialog>
- <q-dialog v-model="delStatusDialog">
+    </q-dialog>
+    <q-dialog v-model="delDialogTesting" persistent>
+      <q-card style="min-width: 350px" id="delDialogTesting">
+        <q-card-section>
+          <div class="text-h6">Delete Segment, Region and Name</div>
+        </q-card-section>
+        <q-card-section class="q-pt-none">
+          <q-input
+            class="gde-delete-database-file"
+            label="Name"
+            ref="delSegmentField"
+            outlined
+            v-model="delSegment"
+            :dense="true"
+          />
+        </q-card-section>
+        <q-card-actions align="right" class="text-primary">
+          <q-btn
+            flat
+            label="Cancel"
+            color="warning"
+            @click="delDialogTesting = false"
+          />
+          <q-btn
+            flat
+            label="OK"
+            @click="delSegmentAndNameTesting"
+            id="delete-segment-ok-btn"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+    <q-dialog
+      v-model="delStatusDialog"
+      id="gde-delete-status-dialog"
+      @keydown.enter="
+        delStatusDialog = false;
+        delDialog = false;
+        delDialogTesting = false;
+      "
+    >
       <q-card>
         <q-bar :class="!$q.dark.isActive ? 'bg-purple' : 'bg-orange'">
           <span class="text-white">Status</span>
           <q-space />
         </q-bar>
 
-        <q-card-section >
-           <pre v-html="delStatusMessage"></pre>
+        <q-card-section>
+          <pre v-html="delStatusMessage"></pre>
         </q-card-section>
 
-          <q-card-actions align="right" class="text-primary">
-            
-          <q-btn flat label="OK" @click="delStatusDialog=false;delDialog=false"/> 
+        <q-card-actions align="right" class="text-primary">
+          <q-btn
+            flat
+            label="OK"
+            @click="
+              delStatusDialog = false;
+              delDialog = false;
+              delDialogTesting = false;
+            "
+            id="gde-del-status-ok-btn"
+          />
         </q-card-actions>
       </q-card>
- </q-dialog>
+    </q-dialog>
 
- <!-- ********************************** DELETE END ***************************************** -->
-  <!-- ********************************** CREATE START**************************************** -->
- <q-dialog v-model="createDialog" persistent>
+    <!-- ********************************** DELETE END ***************************************** -->
+    <!-- ********************************** CREATE START**************************************** -->
+    <q-dialog v-model="createDialog" persistent>
       <q-card style="min-width: 350px">
         <q-card-section>
           <div class="text-h6">Create dataase file for a region</div>
         </q-card-section>
-          <q-card-section class="q-pt-none">
+        <q-card-section class="q-pt-none">
           <q-select
             outlined
             label="Name"
@@ -801,53 +1138,117 @@
             emit-value
           />
         </q-card-section>
-         <q-card-actions align="right" class="text-primary">
-           <q-btn flat label="Cancel" color="warning" @click="createDialog=false" />
-          <q-btn  flat label="OK" @click="createRegion"/> 
+        <q-card-actions align="right" class="text-primary">
+          <q-btn
+            flat
+            label="Cancel"
+            color="warning"
+            @click="createDialog = false"
+          />
+          <q-btn flat label="OK" @click="createRegion" />
         </q-card-actions>
       </q-card>
- </q-dialog>
- <q-dialog v-model="createStatusDialog">
+    </q-dialog>
+    <q-dialog v-model="createDialogTesting" persistent>
+      <q-card style="min-width: 350px">
+        <q-card-section>
+          <div class="text-h6">Create dataase file for a region</div>
+        </q-card-section>
+        <q-card-section class="q-pt-none">
+          <q-input
+            class="gde_create_database_file"
+            ref="addFileField"
+            outlined
+            label="File"
+            v-model="createSegment"
+            :dense="true"
+          />
+        </q-card-section>
+        <q-card-actions align="right" class="text-primary">
+          <q-btn
+            flat
+            label="Cancel"
+            color="warning"
+            @click="createDialogTesting = false"
+          />
+          <q-btn
+            flat
+            label="OK"
+            @click="createRegionForTesting"
+            id="gde-test-btn-create-db-ok"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+    <q-dialog v-model="createStatusDialog">
       <q-card>
         <q-bar :class="!$q.dark.isActive ? 'bg-purple' : 'bg-orange'">
           <span class="text-white">Status</span>
           <q-space />
         </q-bar>
 
-        <q-card-section >
-           <pre v-html="createStatusMessage"></pre>
+        <q-card-section>
+          <pre id="gde-status-message" v-html="createStatusMessage"></pre>
         </q-card-section>
 
-          <q-card-actions align="right" class="text-primary">
-            
-          <q-btn flat label="OK" @click="createStatusDialog=false;createDialog=false"/> 
+        <q-card-actions align="right" class="text-primary">
+          <q-btn
+            flat
+            label="OK"
+            @click="
+              createStatusDialog = false;
+              createDialog = false;
+            "
+            id="gde-status-message-btn-ok"
+          />
         </q-card-actions>
       </q-card>
- </q-dialog>
+    </q-dialog>
 
- <!-- ********************************** CREATE END ***************************************** -->
- <!-- ********************************** ERROR START ***************************************** -->
- <q-dialog v-model="errorDialog" full-width>
-      <q-card>
+    <!-- ********************************** CREATE END ***************************************** -->
+    <!-- ********************************** ERROR START ***************************************** -->
+    <q-dialog v-model="errorDialog" full-width>
+      <q-card id="error-dialog-card">
         <q-bar class="bg-negative">
           <span class="text-white">ERROR</span>
           <q-space />
         </q-bar>
 
-        <q-card-section >
-           <pre v-html="errors"></pre>
+        <q-card-section>
+          <pre v-html="errors"></pre>
         </q-card-section>
 
-          <q-card-actions align="right" class="text-primary">             
-          <q-btn flat label="OK" @click="okError"/> 
+        <q-card-actions align="right" class="text-primary">
+          <q-btn
+            flat
+            label="OK"
+            @click="okError"
+            id="error-dialog-card-btn-ok"
+          />
         </q-card-actions>
       </q-card>
     </q-dialog>
- <!-- ********************************** ERROR END ***************************************** -->
+    <!-- ********************************** ERROR END ***************************************** -->
+    <button
+      @click="createDialogTesting = true"
+      style="float:right;bottom:0px;right:0px;"
+      id="btn-create-db"
+    />
+    <button
+      @click="delDialogTesting = true"
+      style="float:right;bottom:0px;right:0px;"
+      id="btn-delete-db"
+    />
+     <button
+      @click="$refs.tablenames.sort('name')"
+      style="float:right;bottom:0px;right:0px;"
+      id="btn-sort-page-db"
+    />
+    
   </div>
 </template>
 <script>
-import { uid } from 'quasar'
+import { uid } from "quasar";
 import { required, numeric } from "vuelidate/lib/validators";
 
 const regions = [""];
@@ -858,34 +1259,45 @@ export default {
   name: "Gde",
   data() {
     return {
-      createDialog:false,
-      createSegment:'',
-      createStatusDialog:false,
-      createStatusMessage:'',
-      delDialog:false,
-      delSegment:'',
-      delStatusDialog:false,
-      delStatusMessage:'',
-      addStatusDialog:false,
-      addStatusMessage:'',
-      addSegment:'',
-      addFile:'',
-      addDialog:false,
-      errorDialog:false,
-      addNameDialog:false,
-      addRegionDialog:false,
-      addSegmentDialog:false,
-      pageKey:uid(),
-      showDetailsRegionDialog:false,
-      showDetailsSegmentDialog:false,
+      createDialogTesting: false,
+      createDialog: false,
+      createSegment: "",
+      createStatusDialog: false,
+      createStatusMessage: "",
+      delDialog: false,
+      delDialogTesting: false,
+      delSegment: "",
+      delStatusDialog: false,
+      delStatusMessage: "",
+      addStatusDialog: false,
+      addStatusMessage: "",
+      addSegment: "",
+      addFile: "",
+      addDialog: false,
+      errorDialog: false,
+      addNameDialog: false,
+      addRegionDialog: false,
+      addSegmentDialog: false,
+      pageKey: uid(),
+      showDetailsRegionDialog: false,
+      showDetailsSegmentDialog: false,
       editNameDialog: false,
-      editRegionDialog:false,
+      editRegionDialog: false,
       editSegmentDialog: false,
       selectedName: [],
-      selectedRegion:[],
-      selectedSegment:[],
+      selectedRegion: [],
+      selectedSegment: [],
       loading: true,
-      pagination: {
+      paginationNames: {
+        rowsPerPage: 0
+      },
+      paginationSegments: {
+        rowsPerPage: 0
+      },
+      paginationRegions: {
+        rowsPerPage: 0
+      },
+      paginationMap: {
         rowsPerPage: 0
       },
       version: [],
@@ -926,7 +1338,7 @@ export default {
           field: "displayName",
           label: "Name",
           sortable: true,
-          align: "left",
+          align: "left"
         },
         {
           name: "region",
@@ -952,7 +1364,7 @@ export default {
       ],
       regionFields: [
         {
-          field:"name",
+          field: "name",
           name: "name",
           label: "Region",
           sortable: true,
@@ -961,55 +1373,55 @@ export default {
         },
         {
           name: "segment",
-          field:'segment',
+          field: "segment",
           label: "Dynamic Segment",
           sortable: true,
           align: "left"
         },
         {
-          field:'keySize',
+          field: "keySize",
           name: "keySize",
           label: "Key Size",
           sortable: true,
           align: "right"
         },
         {
-          field:'recordSize',
+          field: "recordSize",
           name: "recordSize",
           label: "Record Size",
           sortable: true,
           align: "right"
         },
         {
-          field:'beforeImage',
+          field: "beforeImage",
           name: "beforeImage",
           label: "Before Image Journaling",
           sortable: true,
           align: "center"
         },
         {
-          field:'journal',
+          field: "journal",
           name: "journal",
           label: "Journaling Enabled",
           sortable: true,
           align: "center"
         },
         {
-          field:'journalFileName',
+          field: "journalFileName",
           name: "journalFileName",
           label: "Journal File Name",
           sortable: true,
           align: "left"
         },
         {
-          field:'bufferSize',
+          field: "bufferSize",
           name: "bufferSize",
           label: "Journal Buffer Size",
           sortable: true,
           align: "right"
         },
         {
-          field:'allocation',
+          field: "allocation",
           name: "allocation",
           label: "Journal Allocation",
           sortable: true,
@@ -1087,35 +1499,35 @@ export default {
           field: "from",
           label: "From",
           sortable: true,
-          align:'left'
+          align: "left"
         },
         {
           name: "to",
           field: "to",
           label: "Up to",
           sortable: true,
-          align:'left'
+          align: "left"
         },
         {
           name: "region",
           field: "region",
           label: "Region",
           sortable: true,
-          align:'left'
+          align: "left"
         },
         {
           name: "segment",
           field: "segment",
           label: "Segment",
           sortable: true,
-          align:'left'
+          align: "left"
         },
         {
           name: "file",
           field: "file",
           label: "File Name",
           sortable: true,
-         align:'left'
+          align: "left"
         }
       ],
       sortBy: "name",
@@ -1171,8 +1583,7 @@ export default {
           STATS: true,
           STDNULLCOLL: true
         }
-      },
-      
+      }
     };
   },
   computed: {
@@ -1182,13 +1593,17 @@ export default {
         .filter(f => f.sortable)
         .map(f => ({ text: f.label, value: f.key }));
     },
-  endPoint(){
-    if (this.$store.getters['app/details'].port && this.$store.getters['app/details'].protocol && this.$store.getters['app/details'].ip){
-      return `${this.$store.getters['app/details'].protocol}://${this.$store.getters['app/details'].ip}:${this.$store.getters['app/details'].port}`
-    } else {
-      return ''
+    endPoint() {
+      if (
+        this.$store.getters["app/details"].port &&
+        this.$store.getters["app/details"].protocol &&
+        this.$store.getters["app/details"].ip
+      ) {
+        return `${this.$store.getters["app/details"].protocol}://${this.$store.getters["app/details"].ip}:${this.$store.getters["app/details"].port}`;
+      } else {
+        return "";
+      }
     }
-  }
   },
   mounted() {
     const self = this;
@@ -1268,92 +1683,132 @@ export default {
     return {};
   },
   methods: {
-    async createRegion(){
-        this.$refs.createSegmentField.validate()
+    async createRegion() {
+      this.$refs.createSegmentField.validate();
 
       if (this.$refs.createSegmentField.hasError) {
-          this.$q.notify({
-            message: 'Please fill in required fileds!',
-            color:'negative'
-          })
-          return 
+        this.$q.notify({
+          message: "Please fill in required fileds!",
+          color: "negative"
+        });
+        return;
       }
-      this.createStatusMessage=''
-      this.createStatusDialog = false
-      let data = await this.$M('CREATEREGION^%YDBWEBGDE',{
-        REGION: this.createSegment.toUpperCase(),
-      })
-      if (data && data.STATUS && data.RESULT){
-        this.createSegment=''
-        this.createDialog = false
-        this.createStatusMessage = data.RESULT.join('\n')
-        this.createStatusDialog = true
+      this.createStatusMessage = "";
+      this.createStatusDialog = false;
+      let data = await this.$M("CREATEREGION^%YDBWEBGDE", {
+        REGION: this.createSegment.toUpperCase()
+      });
+      if (data && data.STATUS && data.RESULT) {
+        this.createSegment = "";
+        this.createDialog = false;
+        this.createStatusMessage = data.RESULT.join("\n");
+        this.createStatusDialog = true;
         this.getdata();
       } else {
         this.$q.notify({
-          message: data && data.ERROR || 'Error Creating Database!',
-          color:'negative'
-        })
+          message: (data && data.ERROR) || "Error Creating Database!",
+          color: "negative"
+        });
       }
     },
-    async delSegmentAndName(){
-       this.$refs.delSegmentField.validate()
+    async createRegionForTesting() {
+      this.createStatusMessage = "";
+      this.createStatusDialog = false;
+      let data = await this.$M("CREATEREGION^%YDBWEBGDE", {
+        REGION: this.createSegment.toUpperCase()
+      });
+      if (data && data.STATUS && data.RESULT) {
+        this.createSegment = "";
+        this.createDialogTesting = false;
+        this.createStatusMessage = data.RESULT.join("\n");
+        this.createStatusDialog = true;
+        this.getdata();
+      } else {
+        this.$q.notify({
+          message: (data && data.ERROR) || "Error Creating Database!",
+          color: "negative"
+        });
+      }
+    },
+    async delSegmentAndName() {
+      this.$refs.delSegmentField.validate();
 
       if (this.$refs.delSegmentField.hasError) {
-          this.$q.notify({
-            message: 'Please fill in required fileds!',
-            color:'negative'
-          })
-          return 
+        this.$q.notify({
+          message: "Please fill in required fileds!",
+          color: "negative"
+        });
+        return;
       }
-      this.delStatusMessage=''
-      this.delStatusDialog = false
-      let data = await this.$M('DELSEGMENTANDFILE^%YDBWEBGDE',{
-        SEGMENT: this.delSegment.toUpperCase(),
-      })
-      if (data && data.STATUS && data.RESULT){
-        this.delSegment=''
-        this.delDialog = false
-        this.delStatusMessage = data.RESULT.join('\n')
-        this.delStatusDialog = true
+      this.delStatusMessage = "";
+      this.delStatusDialog = false;
+      let data = await this.$M("DELSEGMENTANDFILE^%YDBWEBGDE", {
+        SEGMENT: this.delSegment.toUpperCase()
+      });
+      if (data && data.STATUS && data.RESULT) {
+        this.delSegment = "";
+        this.delDialog = false;
+        this.delStatusMessage = data.RESULT.join("\n");
+        this.delStatusDialog = true;
         this.getdata();
       } else {
         this.$q.notify({
-          message: data && data.ERROR || 'Error Deleting Data!',
-          color:'negative'
-        })
+          message: (data && data.ERROR) || "Error Deleting Data!",
+          color: "negative"
+        });
       }
     },
-    async addNewSegmentAndFile(){
-      this.$refs.addFileField.validate()
-      this.$refs.addSegmentField.validate()
-      if (this.$refs.addFileField.hasError || this.$refs.addSegmentField.hasError) {
-          this.$q.notify({
-            message: 'Please fill in required fileds!',
-            color:'negative'
-          })
-          return 
-      }
-      this.addStatusMessage=''
-      this.addStatusDialog = false
-      let data = await this.$M('ADDSEGMENTANDFILE^%YDBWEBGDE',{
-        SEGMENT: this.addSegment.toUpperCase(),
-        FILE: this.addFile
-      })
-      if (data && data.STATUS && data.RESULT){
-        this.addSegment=''
-        this.addFile=''
-        this.addDialog = false
-        this.addStatusMessage = data.RESULT.join('\n')
-        this.addStatusDialog = true
+    async delSegmentAndNameTesting() {
+      this.delStatusMessage = "";
+      this.delStatusDialog = false;
+      let data = await this.$M("DELSEGMENTANDFILE^%YDBWEBGDE", {
+        SEGMENT: this.delSegment.toUpperCase()
+      });
+      if (data && data.STATUS && data.RESULT) {
+        this.delSegment = "";
+        this.delDialogTesting = false;
+        this.delStatusMessage = data.RESULT.join("\n");
+        this.delStatusDialog = true;
         this.getdata();
       } else {
         this.$q.notify({
-          message: data && data.ERROR || 'Error Adding Data!',
-          color:'negative'
-        })
+          message: (data && data.ERROR) || "Error Deleting Data!",
+          color: "negative"
+        });
       }
- 
+    },
+    async addNewSegmentAndFile() {
+      this.$refs.addFileField.validate();
+      this.$refs.addSegmentField.validate();
+      if (
+        this.$refs.addFileField.hasError ||
+        this.$refs.addSegmentField.hasError
+      ) {
+        this.$q.notify({
+          message: "Please fill in required fileds!",
+          color: "negative"
+        });
+        return;
+      }
+      this.addStatusMessage = "";
+      this.addStatusDialog = false;
+      let data = await this.$M("ADDSEGMENTANDFILE^%YDBWEBGDE", {
+        SEGMENT: this.addSegment.toUpperCase(),
+        FILE: this.addFile
+      });
+      if (data && data.STATUS && data.RESULT) {
+        this.addSegment = "";
+        this.addFile = "";
+        this.addDialog = false;
+        this.addStatusMessage = data.RESULT.join("\n");
+        this.addStatusDialog = true;
+        this.getdata();
+      } else {
+        this.$q.notify({
+          message: (data && data.ERROR) || "Error Adding Data!",
+          color: "negative"
+        });
+      }
     },
     forceUpper(e, obj, prop) {
       this.$set(obj, prop, e.toUpperCase());
@@ -1423,10 +1878,10 @@ export default {
       self.resetModal();
       self.errorDialog = false;
       // self.selectedItem = Object.assign(self.boundItem, self.cachedItem);
-      self.$nextTick(()=>{
-        self.pageKey = uid()
+      self.$nextTick(() => {
+        self.pageKey = uid();
         self.getdata();
-      })
+      });
     },
     cancel() {
       const self = this;
@@ -1438,10 +1893,10 @@ export default {
 
       // hide all the modals
       self.hideModals();
-      self.$nextTick(()=>{
-        self.pageKey = uid()
+      self.$nextTick(() => {
+        self.pageKey = uid();
         self.getdata();
-      })
+      });
     },
     focusElement() {
       const self = this;
@@ -1608,13 +2063,13 @@ export default {
 
       // hide all the modals
       self.hideModals();
-      self.pageKey = uid()
-      self.selectedName = []
-      self.selectedRegion = []
-      self.selectedSegment = []
+      self.pageKey = uid();
+      self.selectedName = [];
+      self.selectedRegion = [];
+      self.selectedSegment = [];
     },
     hideModals() {
-      const self = this
+      const self = this;
       self.errorDialog = false;
       self.editNameDialog = false;
       self.editRegionDialog = false;
@@ -1647,7 +2102,7 @@ export default {
           delete self.names[item.name];
           index = self.items.findIndex(name => name.name === item.name);
           self.items.splice(index, 1);
-           self.verifydata()
+          self.verifydata();
           // self.verified=true
           break;
         case "segment":
@@ -1670,7 +2125,7 @@ export default {
             segment => segment.name === item.name
           );
           self.segmentItems.splice(index, 1);
-           self.verifydata()
+          self.verifydata();
           // self.verified=true
           break;
         case "region":
@@ -1691,7 +2146,7 @@ export default {
             region => region.name === item.name
           );
           self.regionItems.splice(index, 1);
-          self.verifydata()
+          self.verifydata();
           // self.verified=true
           break;
         default:
@@ -1700,7 +2155,7 @@ export default {
     },
     getdata() {
       const self = this;
-        self.$M('get^%YDBWEBGDE').then(
+      self.$M("get^%YDBWEBGDE").then(
         result => {
           self.names = result.names;
           self.regions = result.regions;
@@ -1711,8 +2166,8 @@ export default {
           self.loading = false;
         },
         error => {
-          self.errors = JSON.stringify(error,null,4);
-          self.errorDialog = true
+          self.errors = JSON.stringify(error, null, 4);
+          self.errorDialog = true;
         }
       );
       // self.verified = true;
@@ -1720,14 +2175,16 @@ export default {
     verifydata() {
       const self = this;
       self.verified = false;
-      self.$M('verify^%YDBWEBGDE',{
+      self
+        .$M("verify^%YDBWEBGDE", {
           names: self.names,
           regions: self.regions,
           segments: self.segments
-      }).then(result => {
+        })
+        .then(result => {
           if (result.verifyStatus) {
             self.verified = true;
-            self.errors = null
+            self.errors = null;
             return Promise.resolve(self.makeitems());
           }
           /*
@@ -1740,11 +2197,11 @@ export default {
             return Promise.resolve(self.makeitems());
           }
           */
-           self.errors = result.errors
-           self.errorDialog = true
+          self.errors = result.errors;
+          self.errorDialog = true;
           return Promise.reject(result.data.errors);
-        })
-        /*
+        });
+      /*
         .catch(error => {
           if (!self.errors) {
             self.errors = JSON.stringify(error,null,4);
@@ -1770,12 +2227,14 @@ export default {
     },
     async savedata() {
       const self = this;
-      self.$M('save^%YDBWEBGDE',{
-           names: self.names,
+      self
+        .$M("save^%YDBWEBGDE", {
+          names: self.names,
           regions: self.regions,
           segments: self.segments,
           deletedItems: self.deletedItems
-      }).then(result => {
+        })
+        .then(result => {
           self.deletedItems = [];
           self.fromSave = true;
           if (result.verifyStatus) {
@@ -1790,27 +2249,27 @@ export default {
               regions: [],
               segments: []
             };
-            self.errors = null
+            self.errors = null;
             self.notify("Data Saved!", true);
             // self.verified = false;
             return Promise.resolve(true);
           }
           self.fromSave = false;
           self.notify("Data Not Saved!", false);
-          self.errorDialog = true
+          self.errorDialog = true;
           self.verified = false;
-          self.errors = result.errors
+          self.errors = result.errors;
           return Promise.reject(result.errors);
         })
         .catch(error => {
           self.deletedItems = [];
           if (!self.errors) {
-            self.errors = JSON.stringify(error,null,4);
+            self.errors = JSON.stringify(error, null, 4);
           }
           self.saved = false;
           self.saved = !self.saved;
           self.verified = false;
-          self.errorDialog = true
+          self.errorDialog = true;
         });
     },
     notify(message, type) {
@@ -1828,10 +2287,10 @@ export default {
 </script>
 <style scoped>
 pre {
-    white-space: pre-wrap;       /* Since CSS 2.1 */
-    white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
-    white-space: -pre-wrap;      /* Opera 4-6 */
-    white-space: -o-pre-wrap;    /* Opera 7 */
-    word-wrap: break-word;       /* Internet Explorer 5.5+ */
+  white-space: pre-wrap; /* Since CSS 2.1 */
+  white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
+  white-space: -pre-wrap; /* Opera 4-6 */
+  white-space: -o-pre-wrap; /* Opera 7 */
+  word-wrap: break-word; /* Internet Explorer 5.5+ */
 }
 </style>
