@@ -41,47 +41,89 @@
         >
           <q-btn-dropdown flat :label="$t('toolbar.system_management')" dense>
             <q-list>
-              <q-item clickable v-close-popup :to="'/processes'">
-                <q-item-section>
-                  <q-item-label>{{
-                    $t("toolbar.running_processes")
-                  }}</q-item-label>
-                </q-item-section>
+              <q-item clickable v-close-popup :to="'/processes'" dense>
+                {{ $t("toolbar.running_processes") }}
               </q-item>
-              <q-item clickable v-close-popup :to="'/gde'">
-                <q-item-section>
-                  <q-item-label>{{
-                    $t("toolbar.global_directory_editor")
-                  }}</q-item-label>
-                </q-item-section>
+              <q-item clickable v-close-popup :to="'/gde'" dense>
+                {{ $t("toolbar.global_directory_editor") }}
               </q-item>
             </q-list>
           </q-btn-dropdown>
           <q-btn-dropdown flat :label="$t('toolbar.system_explorer')" dense>
             <q-list>
-              <q-item clickable v-close-popup :to="'/routines'">
-                <q-item-section>
-                  <q-item-label>{{ $t("toolbar.routines") }}</q-item-label>
-                </q-item-section>
+              <q-item clickable v-close-popup :to="'/routines'" dense>
+               {{ $t("toolbar.routines") }}
               </q-item>
-              <q-item clickable v-close-popup :to="'/globals'">
-                <q-item-section>
-                  <q-item-label>{{ $t("toolbar.globals") }}</q-item-label>
-                </q-item-section>
+              <q-item clickable v-close-popup :to="'/globals'" dense>
+              {{ $t("toolbar.globals") }}
               </q-item>
-              <q-item clickable v-close-popup :to="'/octo-sql'">
-                <q-item-section>
-                  <q-item-label>{{ $t("toolbar.sqltables") }}</q-item-label>
-                </q-item-section>
+              <q-item clickable v-close-popup :to="'/octo-sql'" dense>
+                {{ $t("toolbar.sqltables") }}
               </q-item>
             </q-list>
           </q-btn-dropdown>
           <q-btn-dropdown flat :label="$t('toolbar.utilities')" dense>
             <q-list> </q-list>
           </q-btn-dropdown>
-          <router-link to="/gde" class="text-white">
-            {{ $t("toolbar.documentation").toUpperCase() }}
-          </router-link>
+          <q-btn-dropdown flat :label="$t('toolbar.documentation')" dense>
+            <q-list>
+              <q-item
+                clickable
+                :to="'/documentation/administration_and_operations'"
+                dense
+              >
+                <span style="font-size:16px">
+                  Administration and Operations
+                </span>
+              </q-item>
+              <q-item
+                clickable
+                :to="'/documentation/multi-language_programmers_guide'"
+                dense
+              >
+                <span style="font-size:16px">
+                  Multi-Language Programmers Guide
+                </span>
+              </q-item>
+              <q-item
+                clickable
+                :to="'/documentation/m_programmers_guide'"
+                dense
+              >
+                <span style="font-size:16px">
+                  M Programmers Guide
+                </span>
+              </q-item>
+              <q-item
+                clickable
+                :to="'/documentation/messages_and_recovery_procedures'"
+                dense
+              >
+                <span style="font-size:16px">
+                  Messages and Recovery Procedures
+                </span>
+              </q-item>
+              <q-item
+                clickable
+                :to="'/documentation/acculturation_guide'"
+                dense
+              >
+                <span style="font-size:16px">
+                  Acculturation Guide
+                </span>
+              </q-item>
+              <q-item clickable :to="'/documentation/octo_documentation'" dense>
+                <span style="font-size:16px">
+                  Octo Documentation
+                </span>
+              </q-item>
+              <q-item clickable :to="'/documentation/plugins'" dense>
+                <span style="font-size:16px">
+                  Plugins
+                </span>
+              </q-item>
+            </q-list>
+          </q-btn-dropdown>
         </div>
 
         <q-space />
@@ -215,9 +257,9 @@ export default {
       settingsEntered: false
     };
   },
-  mounted(){
-    if (this.$i18n.locale !== 'en-us'){
-      this.lang = 'en-us'
+  mounted() {
+    if (this.$i18n.locale !== "en-us") {
+      this.lang = "en-us";
     }
   },
   created() {

@@ -1,7 +1,7 @@
 /*
 #################################################################
 #                                                               #
-# Copyright (c) 2021 YottaDB LLC and/or its subsidiaries.       #
+# Copyright (c) 2021-2022 YottaDB LLC and/or its subsidiaries.  #
 # All rights reserved.                                          #
 #                                                               #
 #   This source code contains the intellectual property         #
@@ -35,7 +35,8 @@ module.exports = function (/* ctx */) {
     boot: [
       'i18n',
       'axios',
-      'm'
+      'm',
+      'iframes'
     ],
 
     // https://v1.quasar.dev/quasar-cli/quasar-conf-js#Property%3A-css

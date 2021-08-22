@@ -31,7 +31,7 @@
       class="row items-start q-gutter-md flex flex-center"
       style="padding-top:50px;"
     >
-      <q-card style="width:250px" id="mn-navigation-panels">
+      <q-card style="width:300px" id="mn-navigation-panels">
         <q-img src="~assets/uc-1.png" />
         <q-card-actions>
           <span style="font-size:18px;font-weight:700;">{{$t('toolbar.system_management')}}</span>
@@ -72,7 +72,7 @@
         </q-slide-transition>
       </q-card>
 
-      <q-card style="width:250px">
+      <q-card style="width:300px">
         <q-img src="~assets/uc-2.png" />
         <q-card-actions>
           <span style="font-size:18px;font-weight:700;">{{$t('toolbar.system_explorer')}}</span>
@@ -119,7 +119,7 @@
           </div>
         </q-slide-transition>
       </q-card>
-      <q-card style="width:250px">
+      <q-card style="width:300px">
         <q-img src="~assets/uc-4.png" />
         <q-card-actions>
           <span style="font-size:18px;font-weight:700;">{{$t('toolbar.utilities')}}</span>
@@ -144,7 +144,7 @@
           </div>
         </q-slide-transition>
       </q-card>
-            <q-card style="width:250px">
+            <q-card style="width:300px">
         <q-img src="~assets/uc-6.png" />
         <q-card-actions>
           <span style="font-size:18px;font-weight:700;"> {{$t('toolbar.documentation')}}</span>
@@ -165,6 +165,41 @@
 
         <q-slide-transition>
           <div v-show="expandedDocumentation">
+             <q-item clickable :to="'/documentation/administration_and_operations'" dense>
+              <span style="font-size:16px">
+                Administration and Operations
+              </span>
+            </q-item>
+                      <q-item clickable :to="'/documentation/multi-language_programmers_guide'" dense>
+              <span style="font-size:16px">
+                Multi-Language Programmers Guide
+              </span>
+            </q-item>
+                      <q-item clickable :to="'/documentation/m_programmers_guide'" dense>
+              <span style="font-size:16px">
+                M Programmers Guide
+              </span>
+            </q-item>
+                      <q-item clickable :to="'/documentation/messages_and_recovery_procedures'" dense>
+              <span style="font-size:16px">
+                Messages and Recovery Procedures
+              </span>
+            </q-item>
+                      <q-item clickable :to="'/documentation/acculturation_guide'" dense>
+              <span style="font-size:16px">
+                Acculturation Guide
+              </span>
+            </q-item>
+                      <q-item clickable :to="'/documentation/octo_documentation'" dense>
+              <span style="font-size:16px">
+                Octo Documentation
+              </span>
+            </q-item>
+                      <q-item clickable :to="'/documentation/plugins'" dense>
+              <span style="font-size:16px">
+                Plugins
+              </span>
+            </q-item>
           </div>
         </q-slide-transition>
       </q-card>

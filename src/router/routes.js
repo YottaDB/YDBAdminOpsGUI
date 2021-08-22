@@ -1,7 +1,7 @@
 /*
 #################################################################
 #                                                               #
-# Copyright (c) 2021 YottaDB LLC and/or its subsidiaries.       #
+# Copyright (c) 2022 YottaDB LLC and/or its subsidiaries.       #
 # All rights reserved.                                          #
 #                                                               #
 #   This source code contains the intellectual property         #
@@ -24,6 +24,8 @@ const routes = [
       { path: 'octo-sql', component: () => import('src/pages/OCTOSQL/OCTOSQL.vue') },
       { path: 'processes', component: () => import('src/pages/Processes/Processes.vue') },
       { path: 'process/:pid', component: () => import('src/pages/Processes/ProcessDetails.vue') },
+      { path: 'documentation', component: () => import('src/pages/Documentation/Documentation.vue') },
+      { path: 'documentation/:id', component: () => import('src/pages/Documentation/Documentation.vue') },
     ]
   },
 
