@@ -1,7 +1,7 @@
 <!--
 #################################################################
 #                                                               #
-# Copyright (c) 2021 YottaDB LLC and/or its subsidiaries.       #
+# Copyright (c) 2021-2022 YottaDB LLC and/or its subsidiaries.  #
 # All rights reserved.                                          #
 #                                                               #
 #   This source code contains the intellectual property         #
@@ -31,13 +31,14 @@
       class="row items-start q-gutter-md flex flex-center"
       style="padding-top:50px;"
     >
-      <q-card style="width:250px">
+      <q-card style="width:250px" id="mn-navigation-panels">
         <q-img src="~assets/uc-1.png" />
         <q-card-actions>
           <span style="font-size:18px;font-weight:700;">{{$t('toolbar.system_management')}}</span>
           <q-space />
 
           <q-btn
+            id="mn-system-management-expand-btn"
             color="grey"
             round
             flat
@@ -52,16 +53,20 @@
         </q-card-actions>
 
         <q-slide-transition>
-          <div v-show="expandedSystemManagement">
-             <q-item clickable :to="'/processes'" dense>
-              <span style="font-size:16px">
+          <div v-show="expandedSystemManagement" id="mn-system-management-expand-panel">
+             <q-item dense>
+             <q-btn flat size="xs" dense :to="'/processes'" class="full-width" id="mn-system-management-app-runningprocess">
+              <span style="font-size:12px">
                 {{$t('toolbar.running_processes')}}
               </span>
+             </q-btn>
             </q-item>
-            <q-item clickable :to="'/gde'" dense>
-              <span style="font-size:16px">
+            <q-item dense>
+              <q-btn flat size="xs" dense :to="'/gde'" class="full-width" id="mn-system-management-app-gde">
+              <span style="font-size:12px">
                 {{$t('toolbar.global_directory_editor')}}
               </span>
+              </q-btn>
             </q-item>
           </div>
         </q-slide-transition>
@@ -74,6 +79,7 @@
           <q-space />
 
           <q-btn
+           id="mn-system-explorer-expand-btn"
             color="grey"
             round
             flat
@@ -88,21 +94,27 @@
         </q-card-actions>
 
         <q-slide-transition>
-          <div v-show="expandedSystemExplorer">
-            <q-item clickable :to="'/routines'" dense>
-              <span style="font-size:16px">
+          <div v-show="expandedSystemExplorer" id="mn-system-explorer-expand-panel">
+            <q-item dense>
+             <q-btn flat size="xs" dense :to="'/routines'" class="full-width" id="mn-system-explorer-app-routines">
+              <span style="font-size:12px">
                 {{$t('toolbar.routines')}}
               </span>
+             </q-btn>
             </q-item>
-            <q-item clickable :to="'/globals'" dense>
-              <span style="font-size:16px">
+            <q-item dense>
+             <q-btn flat size="xs" dense :to="'/globals'" class="full-width" id="mn-system-explorer-app-globals">
+              <span style="font-size:12px">
                 {{$t('toolbar.globals')}}
               </span>
+             </q-btn>
             </q-item>
-            <q-item clickable :to="'/octo-sql'" dense>
-              <span style="font-size:16px">
+            <q-item>
+            <q-btn flat size="xs" dense :to="'/octo-sql'" class="full-width" id="mn-system-explorer-app-octo">
+              <span style="font-size:12px">
                 {{$t('toolbar.sqltables')}}
               </span>
+            </q-btn>
             </q-item>
           </div>
         </q-slide-transition>

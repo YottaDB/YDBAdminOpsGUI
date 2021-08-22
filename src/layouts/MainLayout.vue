@@ -1,7 +1,7 @@
 <!--
 #################################################################
 #                                                               #
-# Copyright (c) 2021 YottaDB LLC and/or its subsidiaries.       #
+# Copyright (c) 2021-2022 YottaDB LLC and/or its subsidiaries.  #
 # All rights reserved.                                          #
 #                                                               #
 #   This source code contains the intellectual property         #
@@ -28,6 +28,7 @@
           :ripple="false"
           style="margin-right:10px"
           :to="'/'"
+          id="main-navigation-page"
         >
           <q-avatar size="42px">
             <img src="~assets/logo.png" style="background-color:white;" />
