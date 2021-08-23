@@ -30,10 +30,7 @@
           :to="'/'"
         >
           <q-avatar size="42px">
-            <img
-              src="~assets/logo.png"
-              style="background-color:white;"
-            />
+            <img src="~assets/logo.png" style="background-color:white;" />
           </q-avatar>
         </q-btn>
 
@@ -45,12 +42,16 @@
             <q-list>
               <q-item clickable v-close-popup :to="'/processes'">
                 <q-item-section>
-                  <q-item-label>{{$t('toolbar.running_processes')}}</q-item-label>
+                  <q-item-label>{{
+                    $t("toolbar.running_processes")
+                  }}</q-item-label>
                 </q-item-section>
               </q-item>
               <q-item clickable v-close-popup :to="'/gde'">
                 <q-item-section>
-                  <q-item-label>{{$t('toolbar.global_directory_editor')}}</q-item-label>
+                  <q-item-label>{{
+                    $t("toolbar.global_directory_editor")
+                  }}</q-item-label>
                 </q-item-section>
               </q-item>
             </q-list>
@@ -59,17 +60,17 @@
             <q-list>
               <q-item clickable v-close-popup :to="'/routines'">
                 <q-item-section>
-                  <q-item-label>{{$t('toolbar.routines')}}</q-item-label>
+                  <q-item-label>{{ $t("toolbar.routines") }}</q-item-label>
                 </q-item-section>
               </q-item>
               <q-item clickable v-close-popup :to="'/globals'">
                 <q-item-section>
-                  <q-item-label>{{$t('toolbar.globals')}}</q-item-label>
+                  <q-item-label>{{ $t("toolbar.globals") }}</q-item-label>
                 </q-item-section>
               </q-item>
               <q-item clickable v-close-popup :to="'/octo-sql'">
                 <q-item-section>
-                  <q-item-label>{{$t('toolbar.sqltables')}}</q-item-label>
+                  <q-item-label>{{ $t("toolbar.sqltables") }}</q-item-label>
                 </q-item-section>
               </q-item>
             </q-list>
@@ -78,7 +79,7 @@
             <q-list> </q-list>
           </q-btn-dropdown>
           <router-link to="/gde" class="text-white">
-            {{$t('toolbar.documentation').toUpperCase()}}
+            {{ $t("toolbar.documentation").toUpperCase() }}
           </router-link>
         </div>
 
@@ -86,6 +87,7 @@
 
         <div class="q-pl-sm q-gutter-sm row items-center no-wrap">
           <q-select
+            v-show="false"
             v-model="lang"
             :options="langOptions"
             dense
@@ -136,8 +138,7 @@
         />
         <q-card-section>
           <div class="text-h6">Connection Info</div>
-          <div>
-          </div>
+          <div></div>
         </q-card-section>
 
         <q-card-section class="q-pt-none">
@@ -204,13 +205,19 @@ export default {
       protocol: "http",
       port: "",
       theme: "light",
-      lang: this.$i18n.locale,
+      // lang: this.$i18n.locale,
+      lang: "en-us",
       langOptions: [
         { value: "en-us", label: "EN" },
-        { value: "ar", label: "AR" },
+        { value: "ar", label: "AR" }
       ],
       settingsEntered: false
     };
+  },
+  mounted(){
+    if (this.$i18n.locale !== 'en-us'){
+      this.lang = 'en-us'
+    }
   },
   created() {
     this.theme = this.$q.localStorage.getItem("ydb-app-theme") || "light";
