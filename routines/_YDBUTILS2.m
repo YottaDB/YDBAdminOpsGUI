@@ -10,72 +10,72 @@
 	;#   the license, please stop and do not read further.           #
 	;#                                                               #
 	;#################################################################		
-	Q
+	quit
 	;
-RunShellCommand(Command,RET)
-	N DEV,COUNTER,STR,IO S COUNTER=0
-	S IO=$IO
-	S DEV="RunShellCommmandPipe"_$J
-	O DEV:(shell="/bin/sh":command=Command:readonly)::"PIPE"
-	U DEV F  Q:$ZEOF=1  R STR:2 S RET($I(COUNTER))=STR Q:'$T
-	C DEV I $G(RET(COUNTER))="" K RET(COUNTER)
-	U IO
-	Q
+RunShellCommand(command,return)
+	new device,counter,string,currentdevice set counter=0
+	set currentdevice=$io
+	set device="runshellcommmandpipe"_$job
+	open device:(shell="/bin/sh":command=command:readonly)::"pipe"
+	use device for  quit:$zeof=1  read string:2 set return($increment(counter))=string quit:'$test
+	close device if $get(return(counter))="" kill return(counter)
+	use currentdevice
+	quit
 	;
-DirectoryExists(PATH)
-	Q $ZSEARCH(PATH)]""
+DirectoryExists(path)
+	quit $zsearch(path)]""
 	;
-FileExists(PATH)
-	Q $ZSEARCH(PATH)]""
+FileExists(path)
+	quit $zsearch(path)]""
 	;
-CreateDirectoryTree(PATH)
-	N RET,COMMMAND
-	S COMMAND="mkdir -p "_PATH
-	D RunShellCommand(COMMAND,.RET)
-	I $$DirectoryExists(PATH) Q 1
-	Q 0
+CreateDirectoryTree(path)
+	new return,commmand
+	set command="mkdir -p "_path
+	do RunShellCommand(command,.return)
+	if $$DirectoryExists(path) quit 1
+	quit 0
 	;
-GetRoutineList(%ZR,PATTERN)
-	I $G(PATTERN)="" S PATTERN="*"
-	D SILENT^%RSEL(PATTERN)
-	Q
+GetRoutineList(%ZR,pattern)
+	if $get(pattern)="" set pattern="*"
+	do SILENT^%RSEL(pattern)
+	quit
 	;
-GetGlobalList(%ZG,PATTERN)
-	I $G(PATTERN)="" S PATTERN="*"
-	S %ZG=PATTERN
-	D GD^%YDBUTILS3(.%ZG)
-	ZK %ZG
-	Q
+GetGlobalList(%ZG,pattern)
+	if $get(pattern)="" set pattern="*"
+	set %ZG=pattern
+	do GD^%YDBUTILS3(.%ZG)
+	zkill %ZG
+	quit
 	;
-ReadFileByLine(FILE,RET)
-	N SRC,LINE,COUNTER,IO
-	S SRC=FILE,IO=$IO
-	O SRC:(readonly:chset="M")
-	F  U SRC R LINE:2 Q:$ZEOF  Q:'$T  D
-	. I $E(LINE,$L(LINE))=$C(13) S LINE=$E(LINE,1,$L(LINE)-1)
-	. I $E(LINE,$L(LINE))=$C(10) S LINE=$E(LINE,1,$L(LINE)-1)
-	. S RET($I(COUNTER))=LINE
-	C SRC U IO
-	Q
+ReadFileByLine(file,return)
+	new source,line,counter,currentdevice
+	set source=file,currentdevice=$io
+	open source:(readonly:chset="m")
+	for  use source read line:2 quit:$zeof  quit:'$test  do
+	. if $zextract(line,$zlength(line))=$char(13) set line=$zextract(line,1,$zlength(line)-1)
+	. if $zextract(line,$zlength(line))=$char(10) set line=$zextract(line,1,$zlength(line)-1)
+	. set return($increment(counter))=line
+	close source use currentdevice
+	quit
 	;
-ReadFileByChunk(FILE,CHUNK,RET)
-	N SRC,LINE,COUNTER,IO
-	S IO=$IO
-	S SRC=FILE
-	O SRC:(readonly:fixed:recordsize=CHUNK:chset="M")
-	F  U SRC R LINE:2 Q:$ZEOF  Q:'$T  D
-	. S RET($I(COUNTER))=LINE
-	C SRC
-	U IO
-	Q
+ReadFileByChunk(file,chunk,return)
+	new source,line,counter,currentdevice
+	set currentdevice=$io
+	set source=file
+	open source:(readonly:fixed:recordsize=chunk:chset="m")
+	for  use source read line:2 quit:$zeof  quit:'$test  do
+	. set return($increment(counter))=line
+	close source
+	use currentdevice
+	quit
 	;
-WriteFile(FILE,DATA)
-	N IO S IO=$IO
-	O FILE:(newversion)
-	N A S A="" F  S A=$O(DATA(A)) Q:A=""  U FILE W DATA(A),!
-	C FILE
-	U IO
-	Q
+WriteFile(file,data)
+	new currentdevice set currentdevice=$io
+	open file:(newversion)
+	new line set line="" for  set line=$o(data(line)) quit:line=""  use file write data(line),!
+	close file
+	use currentdevice
+	quit
 	;
-UP(STR)	Q $ZCONVERT(STR,"U")
-LOW(STR) Q $ZCONVERT(STR,"L")
+UP(string)	quit $zconvert(string,"u")
+LOW(string) quit $zconvert(string,"l")
