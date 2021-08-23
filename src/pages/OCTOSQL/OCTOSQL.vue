@@ -24,9 +24,8 @@
         :color="!$q.dark.isActive ? 'purple' : 'orange'"
       />
       <q-breadcrumbs gutter="xs" style="padding-left:10px;" id="breadcrumbs">
-        <q-breadcrumbs-el label="Home" />
-        <q-breadcrumbs-el label="System Explorer" />
-        <q-breadcrumbs-el label="OCTO Tables" />
+        <q-breadcrumbs-el label="Home" icon="home" :to="'/'"/>
+        <q-breadcrumbs-el label="Octo" icon="account_tree" :to="'octo-sql'"/>
       </q-breadcrumbs>
     </div>
     <q-dialog v-model="loadingDialog" persistent>

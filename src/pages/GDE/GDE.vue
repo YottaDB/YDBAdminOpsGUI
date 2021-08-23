@@ -15,14 +15,10 @@
   <div class="q-pa-md" :key="pageKey" id="gdediv">
     <div style="padding:5px">
       <q-breadcrumbs gutter="xs" id="breadcrumbs">
-        <q-breadcrumbs-el label="Home" />
-        <q-breadcrumbs-el label="System Administration" />
-        <q-breadcrumbs-el label="Global Directory Editor (GDE)" />
-      </q-breadcrumbs>
-      <span
-        :class="$q.dark.isActive ? 'text-orange' : 'text-purple'"
-        style="font-size:28px;padding:25px"
-        id="gde_header"
+        <q-breadcrumbs-el label="Home" icon="home" :to="'/'"/>
+        <q-breadcrumbs-el label="Global Directory Editor (GDE)" :to="'/gde'" icon="settings"/>
+    </q-breadcrumbs>
+      <span :class="$q.dark.isActive?'text-orange':'text-purple'" style="font-size:28px;padding:25px" id="gde_header"
         >Global Directory Editor (GDE)</span
       >
 

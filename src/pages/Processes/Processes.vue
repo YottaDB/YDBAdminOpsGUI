@@ -15,9 +15,8 @@
      <div class="q-pa-md">
     <div style="padding:5px">
       <q-breadcrumbs gutter="xs">
-      <q-breadcrumbs-el  label="Home" />
-      <q-breadcrumbs-el label="System Administration" />
-      <q-breadcrumbs-el  label="Running Processes" />
+          <q-breadcrumbs-el label="Home" icon="home" :to="'/'"/>
+        <q-breadcrumbs-el  label="Running Processes" :to="'/processes'" icon="view_list"/>
     </q-breadcrumbs>
        <q-btn round style="margin-right:10px" size="md" icon="refresh"  :color="!$q.dark.isActive ? 'purple' : 'orange'"  @click="refreshProcesses">
         <q-tooltip>

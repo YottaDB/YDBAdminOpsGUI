@@ -15,10 +15,9 @@
   <div class="q-pa-md">
     <div style="padding:5px">
       <q-breadcrumbs gutter="xs">
-        <q-breadcrumbs-el  label="Home" />
-        <q-breadcrumbs-el  label="System Management" />
-        <q-breadcrumbs-el  label="Processes" />
-        <q-breadcrumbs-el  :label="'Process ' + $route.params.pid" />
+         <q-breadcrumbs-el label="Home" icon="home" :to="'/'"/>
+        <q-breadcrumbs-el  label="Running Processes" :to="'/processes'" icon="view_list"/>
+        <q-breadcrumbs-el icon="computer" :label="'Process ' + $route.params.pid" :to="'/process/'+$route.params.pid"/>
       </q-breadcrumbs>
       <q-btn
         round

@@ -24,9 +24,8 @@
         :color="!$q.dark.isActive ? 'purple' : 'orange'"
       />
       <q-breadcrumbs gutter="xs" style="padding-left:10px;" id="breadcrumbs">
-        <q-breadcrumbs-el label="Home" />
-        <q-breadcrumbs-el label="System Explorer" />
-        <q-breadcrumbs-el label="Globals" />
+        <q-breadcrumbs-el label="Home" icon="home" :to="'/'"/>
+        <q-breadcrumbs-el label="Globals" icon="source" :to="'/globals'"/>
       </q-breadcrumbs>
       <transition
         appear

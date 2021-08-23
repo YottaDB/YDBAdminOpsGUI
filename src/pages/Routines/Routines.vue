@@ -60,12 +60,12 @@
         :color="!$q.dark.isActive ? 'purple' : 'orange'"
       />
       <q-breadcrumbs gutter="xs" style="padding-left:10px;" id="breadcrumbs">
-        <q-breadcrumbs-el label="Home" />
-        <q-breadcrumbs-el label="System Explorer" />
-        <q-breadcrumbs-el label="Routines" />
+        <q-breadcrumbs-el label="Home" icon="home" :to="'/'"/>
+        <q-breadcrumbs-el label="Routines" icon="description" :to="'/routines'"/>
         <q-breadcrumbs-el
          v-if="tabData && tabData[tab] && tabData[tab].path"
           :label="tabData[tab].path + tabData[tab].name ? tabData[tab].path + tabData[tab].name + '.m' : ''"
+          :to="'/routines'"
         />
       </q-breadcrumbs>
     </div>

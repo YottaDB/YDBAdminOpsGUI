@@ -34,7 +34,7 @@ describe("Octo Module Tests", async () => {
   });
 
   it("Checking that the page header exists and equals 'OCTO Tables'", async () => {
-    await delay(500);
+    await delay(1500);
     expect(
       await page.$eval("#octo_header", node => node.innerText)
     ).to.equal("OCTO Tables");
