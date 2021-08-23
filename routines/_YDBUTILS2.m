@@ -1,7 +1,7 @@
 %YDBUTILS2 ; YottaDB Utilities Routine; 05-07-2021
 	;#################################################################
 	;#                                                               #
-	;# Copyright (c) 2021 YottaDB LLC and/or its subsidiaries.       #
+	;# Copyright (c) 2021-2022 YottaDB LLC and/or its subsidiaries.  #
 	;# All rights reserved.                                          #
 	;#                                                               #
 	;#   This source code contains the intellectual property         #
@@ -43,7 +43,7 @@ GetRoutineList(%ZR,pattern)
 GetGlobalList(%ZG,pattern)
 	if $get(pattern)="" set pattern="*"
 	set %ZG=pattern
-	do GD^%YDBUTILS3(.%ZG)
+	do CALL^%GSEL
 	zkill %ZG
 	quit
 	;
