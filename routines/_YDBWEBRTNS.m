@@ -1,7 +1,7 @@
 %YDBWEBRTNS ; YottaDB Routines Explorer; 05-07-2021
 	;#################################################################
 	;#                                                               #
-	;# Copyright (c) 2021 YottaDB LLC and/or its subsidiaries.       #
+	;# Copyright (c) 2021-2022 YottaDB LLC and/or its subsidiaries.  #
 	;# All rights reserved.                                          #
 	;#                                                               #
 	;#   This source code contains the intellectual property         #
@@ -14,18 +14,20 @@
 	;
 	;
 GETROUTINESLIST(I,O)
-	new pattern
+	new pattern,sysrtns
 	set pattern=$get(I("data","PATTERN"))
+	set sysrtns=$get(I("data","SYS"))
 	if pattern="" set pattern="*"
 	new routines,response set response=$name(O("data"))
 	do GetRoutineList^%YDBUTILS(.routines,pattern)
-	new paths,id,counter
+	new paths,id,counter,octoroutines set octoroutines=0
 	set id="" for  set id=$order(routines(id)) quit:id=""  do
+	. if $zextract(id)="%",sysrtns="false" set octoroutines=octoroutines+1 quit
 	. if $increment(counter) do
 	. . set @response@("RLIST",counter,"r")=id
 	. . set @response@("RLIST",counter,"p")=routines(id)
 	. . if routines(id)]"" set paths(routines(id))=""
-	set @response@("RTOTAL")=$get(routines,0)
+	set @response@("RTOTAL")=$get(routines,0)-octoroutines
 	set id="",counter=0 for  set id=$order(paths(id)) quit:id=""  do
 	. if $increment(counter) set @response@("PLIST",counter)=id
 	quit

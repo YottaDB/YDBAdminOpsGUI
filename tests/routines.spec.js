@@ -1,7 +1,7 @@
 /*
 #################################################################
 #                                                               #
-# Copyright (c) 2021 YottaDB LLC and/or its subsidiaries.       #
+# Copyright (c) 2021-2022 YottaDB LLC and/or its subsidiaries.  #
 # All rights reserved.                                          #
 #                                                               #
 #   This source code contains the intellectual property         #
@@ -21,7 +21,6 @@ describe("Routines Module Tests", async () => {
       timeout: 0,
       waitUntil: "domcontentloaded"
     });
-    await delay(1100);
     await page.waitForSelector("#routines_header");
     expect(await page.url()).to.equal(
       `http://localhost:${MDevPort}/YottaDB/routines/`
@@ -39,6 +38,9 @@ describe("Routines Module Tests", async () => {
   });
 
   it("Routine count has to be higher than zero", async () => {
+    let btnClick = await page.$("#showsyscheckbox");
+    await btnClick.click();
+    await delay(500);
     expect(
       await page.$eval("#routine_count_section", node => node.innerText)
     ).to.not.equal("0 Routines");
@@ -82,19 +84,15 @@ describe("Routines Module Tests", async () => {
     await delay(500);
     let btnSave = await page.$("#rtn-btn-save");
     await btnSave.click();
-    await delay(500);
     await page.reload({ waitUntil: ["networkidle0", "domcontentloaded"] });
   });
 
 
   it("Check that routine YDBWEBRTNSTEST is present in the routines list", async () => {
-    await delay(500);
     let searchInput = await page.$(".routine_search_input");
     await searchInput.focus();
     await page.keyboard.press("Backspace");
-    await delay(500);
     await searchInput.type("YDBWEBRTNSTEST");
-    await delay(500);
     await page.keyboard.press("Enter");
     await delay(500);
     if (
@@ -103,48 +101,27 @@ describe("Routines Module Tests", async () => {
       throw new Error('Expecting to find routine YDBWEBRTNSTEST')
     }
       await page.reload({ waitUntil: ["networkidle0", "domcontentloaded"] });
-     
-  });
-
-
-
-  it("Selecting routine YDBWEBRTNSTEST from the routines list", async () => {
-    await delay(500);
-    searchInput = await page.$(".routine_search_input");
-    await searchInput.focus();
-    await page.keyboard.press("Backspace");
-    await delay(500);
-    await searchInput.type("YDBWEBRTNSTEST");
-    await delay(500);
-    await page.keyboard.press("Enter");
-    await delay(500);
     let rtn = await page.$("#column-YDBWEBRTNSTEST");
     await rtn.click()
     await delay(500);
   });
 
-
-
   it("Filling YDBWEBRTNSTEST with the routine content needed for testing", async () => {
+    // This just moves the cursor, as there is an autofocus bug when choosing an already open routine
+    await page.keyboard.type("\t");
     await page.keyboard.press('End');
     await page.keyboard.press('Enter');
     await page.keyboard.type("\t;");
     await page.keyboard.press('Enter');
-    await page.keyboard.press('Home');
-    await page.keyboard.type("\t;");
+    await page.keyboard.type(";");
     await page.keyboard.press('Enter');
-    await page.keyboard.press('Home');
-    await page.keyboard.type("\t;");
+    await page.keyboard.type(";");
     await page.keyboard.press('Enter');
-    await page.keyboard.press('Home');
-    await page.keyboard.type("\t;");
+    await page.keyboard.type(";");
     await page.keyboard.press('Enter');
     await page.keyboard.press('Home');
     await page.keyboard.type("TEST W 1 Q");
-    await page.keyboard.press('Home');
     await page.keyboard.press('Enter');
-    await delay(500);
-    await page.keyboard.press('Home');
   })
 
 
@@ -155,9 +132,6 @@ describe("Routines Module Tests", async () => {
   })
 
   it("Executing D TEST^YDBWEBRTNSTEST, expecting 1", async () =>{
-    btnSave = await page.$("#rtn-btn-save");
-    await btnSave.click();
-    await delay(1000);
     exec("$ydb_dist/yottadb -run %XCMD 'D TEST^YDBWEBRTNSTEST'", (error, stdout, stderr) => {
       if (error) {
           throw new Error (error)
@@ -212,6 +186,26 @@ describe("Routines Module Tests", async () => {
         0
       );
   });
+
+  it("Testing [Show System generated routines button]]", async () => {
+    let routinesCount = await page.$$eval("#routines_column", nodes => Number(nodes.length))
+    let btnClick = await page.$("#showsyscheckbox");
+    await btnClick.click();
+    searchInput = await page.$(".routine_search_input");
+    await searchInput.focus();
+    for (let i=0; i<25; i++){
+      await page.keyboard.press("Backspace");
+    }
+    await searchInput.type('*')
+    await page.keyboard.press("Enter");
+    await delay(500);
+    let generatedCount = await page.$$eval("#routines_column", nodes => Number(nodes.length))
+    expect(
+      generatedCount
+    ).to.be.above(
+      routinesCount
+    );
+});
 
   function delay(time) {
     return new Promise(function(resolve) {
