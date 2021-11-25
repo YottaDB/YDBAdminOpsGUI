@@ -23,9 +23,6 @@
         Refresh running processes
         </q-tooltip>
       </q-btn>
-      <span class="text-center" style="font-size:28px;padding:25px"
-        ></span
-      >
     </div>
     <div class="row flex flex-center">
         <div class="col-auto">

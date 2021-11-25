@@ -54,19 +54,14 @@
 
         <q-slide-transition>
           <div v-show="expandedSystemManagement" id="mn-system-management-expand-panel">
-             <q-item dense>
-             <q-btn flat size="xs" dense :to="'/processes'" class="full-width" id="mn-system-management-app-runningprocess">
-              <span style="font-size:12px">
-                {{$t('toolbar.running_processes')}}
-              </span>
-             </q-btn>
+            <q-item clickable :to="'/dashboard'" id="mn-system-management-app-dashboard" dense>
+                {{$t('toolbar.dashboard')}}
             </q-item>
-            <q-item dense>
-              <q-btn flat size="xs" dense :to="'/gde'" class="full-width" id="mn-system-management-app-gde">
-              <span style="font-size:12px">
-                {{$t('toolbar.global_directory_editor')}}
-              </span>
-              </q-btn>
+            <q-item clickable :to="'/processes'" id="mn-system-management-app-runningprocess" dense>
+                  {{$t('toolbar.running_processes')}}
+            </q-item>
+            <q-item clickable :to="'/gde'" id="mn-system-management-app-gde" dense>
+                  {{$t('toolbar.global_directory_editor')}}
             </q-item>
           </div>
         </q-slide-transition>
@@ -95,26 +90,14 @@
 
         <q-slide-transition>
           <div v-show="expandedSystemExplorer" id="mn-system-explorer-expand-panel">
-            <q-item dense>
-             <q-btn flat size="xs" dense :to="'/routines'" class="full-width" id="mn-system-explorer-app-routines">
-              <span style="font-size:12px">
+            <q-item clickable :to="'/routines'" id="mn-system-explorer-app-routines" dense>
                 {{$t('toolbar.routines')}}
-              </span>
-             </q-btn>
             </q-item>
-            <q-item dense>
-             <q-btn flat size="xs" dense :to="'/globals'" class="full-width" id="mn-system-explorer-app-globals">
-              <span style="font-size:12px">
+            <q-item clickable :to="'/globals'" id="mn-system-explorer-app-globals" dense>
                 {{$t('toolbar.globals')}}
-              </span>
-             </q-btn>
             </q-item>
-            <q-item>
-            <q-btn flat size="xs" dense :to="'/octo-sql'" class="full-width" id="mn-system-explorer-app-octo">
-              <span style="font-size:12px">
+            <q-item clickable :to="'/octo-sql'" id="mn-system-explorer-app-octo" dense>
                 {{$t('toolbar.sqltables')}}
-              </span>
-            </q-btn>
             </q-item>
           </div>
         </q-slide-transition>
@@ -166,39 +149,25 @@
         <q-slide-transition>
           <div v-show="expandedDocumentation">
              <q-item clickable :to="'/documentation/administration_and_operations'" dense>
-              <span style="font-size:16px">
                 Administration and Operations
-              </span>
             </q-item>
-                      <q-item clickable :to="'/documentation/multi-language_programmers_guide'" dense>
-              <span style="font-size:16px">
+	    <q-item clickable :to="'/documentation/multi-language_programmers_guide'" dense>
                 Multi-Language Programmers Guide
-              </span>
             </q-item>
-                      <q-item clickable :to="'/documentation/m_programmers_guide'" dense>
-              <span style="font-size:16px">
+	    <q-item clickable :to="'/documentation/m_programmers_guide'" dense>
                 M Programmers Guide
-              </span>
             </q-item>
-                      <q-item clickable :to="'/documentation/messages_and_recovery_procedures'" dense>
-              <span style="font-size:16px">
+	    <q-item clickable :to="'/documentation/messages_and_recovery_procedures'" dense>
                 Messages and Recovery Procedures
-              </span>
             </q-item>
-                      <q-item clickable :to="'/documentation/acculturation_guide'" dense>
-              <span style="font-size:16px">
+	    <q-item clickable :to="'/documentation/acculturation_guide'" dense>
                 Acculturation Guide
-              </span>
             </q-item>
-                      <q-item clickable :to="'/documentation/octo_documentation'" dense>
-              <span style="font-size:16px">
+	    <q-item clickable :to="'/documentation/octo_documentation'" dense>
                 Octo Documentation
-              </span>
             </q-item>
-                      <q-item clickable :to="'/documentation/plugins'" dense>
-              <span style="font-size:16px">
+	    <q-item clickable :to="'/documentation/plugins'" dense>
                 Plugins
-              </span>
             </q-item>
           </div>
         </q-slide-transition>

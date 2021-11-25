@@ -1,7 +1,7 @@
 /*
 #################################################################
 #                                                               #
-# Copyright (c) 2021 YottaDB LLC and/or its subsidiaries.       #
+# Copyright (c) 2021-2022 YottaDB LLC and/or its subsidiaries.  #
 # All rights reserved.                                          #
 #                                                               #
 #   This source code contains the intellectual property         #
@@ -22,6 +22,7 @@ export default {
     global_directory_editor:'Global Directory Editor (GDE)',
     routines:'Routines',
     globals:'Globals',
-    sqltables:'OCTO SQL'
+    sqltables:'Octo SQL',
+    dashboard: 'Dashboard'
   }
 }

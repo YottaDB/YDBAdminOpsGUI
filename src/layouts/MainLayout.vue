@@ -41,8 +41,17 @@
         >
           <q-btn-dropdown flat :label="$t('toolbar.system_management')" dense>
             <q-list>
+             <q-item clickable v-close-popup :to="'/dashboard'" dense>
+                <q-item-section>
+                  <q-item-label>{{$t('toolbar.dashboard')}}</q-item-label>
+                </q-item-section>
+              </q-item>
               <q-item clickable v-close-popup :to="'/processes'" dense>
-                {{ $t("toolbar.running_processes") }}
+                <q-item-section>
+                  <q-item-label>{{
+                    $t("toolbar.running_processes")
+                  }}</q-item-label>
+                </q-item-section>
               </q-item>
               <q-item clickable v-close-popup :to="'/gde'" dense>
                 {{ $t("toolbar.global_directory_editor") }}
@@ -67,60 +76,26 @@
           </q-btn-dropdown>
           <q-btn-dropdown flat :label="$t('toolbar.documentation')" dense>
             <q-list>
-              <q-item
-                clickable
-                :to="'/documentation/administration_and_operations'"
-                dense
-              >
-                <span style="font-size:16px">
+              <q-item clickable :to="'/documentation/administration_and_operations'" dense>
                   Administration and Operations
-                </span>
               </q-item>
-              <q-item
-                clickable
-                :to="'/documentation/multi-language_programmers_guide'"
-                dense
-              >
-                <span style="font-size:16px">
+              <q-item clickable :to="'/documentation/multi-language_programmers_guide'" dense>
                   Multi-Language Programmers Guide
-                </span>
               </q-item>
-              <q-item
-                clickable
-                :to="'/documentation/m_programmers_guide'"
-                dense
-              >
-                <span style="font-size:16px">
+              <q-item clickable :to="'/documentation/m_programmers_guide'" dense>
                   M Programmers Guide
-                </span>
               </q-item>
-              <q-item
-                clickable
-                :to="'/documentation/messages_and_recovery_procedures'"
-                dense
-              >
-                <span style="font-size:16px">
+              <q-item clickable :to="'/documentation/messages_and_recovery_procedures'" dense>
                   Messages and Recovery Procedures
-                </span>
               </q-item>
-              <q-item
-                clickable
-                :to="'/documentation/acculturation_guide'"
-                dense
-              >
-                <span style="font-size:16px">
+              <q-item clickable :to="'/documentation/acculturation_guide'" dense>
                   Acculturation Guide
-                </span>
               </q-item>
               <q-item clickable :to="'/documentation/octo_documentation'" dense>
-                <span style="font-size:16px">
                   Octo Documentation
-                </span>
               </q-item>
               <q-item clickable :to="'/documentation/plugins'" dense>
-                <span style="font-size:16px">
                   Plugins
-                </span>
               </q-item>
             </q-list>
           </q-btn-dropdown>

@@ -1,8 +1,7 @@
-
-/*
+<!--
 #################################################################
 #                                                               #
-# Copyright (c) 2021-2022 YottaDB LLC and/or its subsidiaries.  #
+# Copyright (c) 2022 YottaDB LLC and/or its subsidiaries.       #
 # All rights reserved.                                          #
 #                                                               #
 #   This source code contains the intellectual property         #
@@ -11,19 +10,24 @@
 #   the license, please stop and do not read further.           #
 #                                                               #
 #################################################################
-*/
+-->
+<script>
+import { Pie } from 'vue-chartjs'
 
 export default {
-  toolbar:{
-    system_management:'ادارة النظام',
-    system_explorer:'مستكشف النظام',
-    utilities:'خدمات',
-    documentation:'توثيق',
-    running_processes:'ادارة العمليات',
-    global_directory_editor:'محرر الدليل العالمي (GDE)',
-    routines:'الروتين',
-    globals:'جلوبالس',
-    sqltables:'OCTO الجداول',
-    dashboard: 'Dashboard'
+  extends: Pie,
+  props: {
+    chartdata: {
+      type: Object,
+      default: null
+    },
+    options: {
+      type: Object,
+      default: null
+    }
+  },
+  mounted () {
+    this.renderChart(this.chartdata, this.options)
   }
 }
+</script>
