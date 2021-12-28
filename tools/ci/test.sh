@@ -12,9 +12,5 @@
 #								#
 #################################################################
 
-source $(pkg-config --variable=prefix yottadb)/ydb_env_set
-$ydb_dist/mupip set -journal=before,enable,on -region YDBOCTO
-git clone https://gitlab.com/YottaDB/DBMS/YDBOcto.git YDBOcto-master
-$ydb_dist/mupip load YDBOcto-master/tests/fixtures/northwind.zwr
-octo -f YDBOcto-master/tests/fixtures/northwind.sql
-octo <<< 'select c.relname from pg_catalog.pg_class c'
+set -e
+npm test

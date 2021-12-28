@@ -50,7 +50,10 @@ ydb-gui-test:
     - export ydb_routines=`$ydb_dist/yottadb -run %XCMD 'W $P($P($ZRO,"(",1,2),")")_" "_"$PWD/routines"_")"_$P($ZRO,")",2,$L($ZRO,")"))'` 
     - export ydb_zinterrupt="I \$\$JOBEXAM^%YDBWEBZU(\$ZPOSITION)"
     - $ydb_dist/yottadb -run Start^%YDBWEB
-    - npm test
+    - ./tools/ci/test.sh
   artifacts:
     paths:
     - tests/results
+    when: always
+    expire_in: 1 month
+    
