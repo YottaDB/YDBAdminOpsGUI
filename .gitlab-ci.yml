@@ -1,6 +1,6 @@
 #################################################################
 #                                                               #
-# Copyright (c) 2021 YottaDB LLC and/or its subsidiaries.       #
+# Copyright (c) 2021-2022 YottaDB LLC and/or its subsidiaries.  #
 # All rights reserved.                                          #
 #                                                               #
 #       This source code contains the intellectual property     #
@@ -12,6 +12,25 @@
 
 stages:
   - build
+  - test
+
+include:
+  - template: Security/Dependency-Scanning.gitlab-ci.yml
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Security/License-Scanning.gitlab-ci.yml
+
+npm-audit:
+  image: "registry.gitlab.com/gitlab-org/security-products/analyzers/npm-audit:1.4.0"
+  stage: test
+  variables:
+    TOOL: npm
+  script:
+    - /analyzer run
+  artifacts:
+    reports:
+      dependency_scanning: gl-dependency-scanning-report.json
+    paths:
+      - gl-dependency-scanning-report.json
 
 commit-verify:
   image: ubuntu:20.04
@@ -26,7 +45,7 @@ commit-verify:
 
 ydb-gui-test:
   image: ubuntu:20.04
-  stage: build
+  stage: test
   script:
     - apt-get update
     - export DEBIAN_FRONTEND="noninteractive" 
@@ -56,4 +75,3 @@ ydb-gui-test:
     - tests/results
     when: always
     expire_in: 1 month
-    
