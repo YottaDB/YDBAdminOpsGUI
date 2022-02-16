@@ -1,7 +1,7 @@
 <!--
 #################################################################
 #                                                               #
-# Copyright (c) 2021 YottaDB LLC and/or its subsidiaries.       #
+# Copyright (c) 2021-2022 YottaDB LLC and/or its subsidiaries.  #
 # All rights reserved.                                          #
 #                                                               #
 #   This source code contains the intellectual property         #
@@ -11,6 +11,7 @@
 #                                                               #
 #################################################################
 -->
+import "@fontsource/firago"
 <template>
   <div id="q-app">
     <router-view />
@@ -22,6 +23,10 @@ export default {
 }
 </script>
 <style>
+html, body
+{
+    font-family: 'FiraGO', sans-serif;
+}
 body ::-webkit-scrollbar-track
 {
     -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
