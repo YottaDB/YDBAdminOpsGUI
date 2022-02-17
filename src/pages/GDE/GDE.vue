@@ -1,7 +1,7 @@
 <!--
 #################################################################
 #                                                               #
-# Copyright (c) 2021 YottaDB LLC and/or its subsidiaries.       #
+# Copyright (c) 2021-2022 YottaDB LLC and/or its subsidiaries.  #
 # All rights reserved.                                          #
 #                                                               #
 #   This source code contains the intellectual property         #
@@ -999,7 +999,7 @@
         </q-bar>
 
         <q-card-section>
-          <pre v-html="addStatusMessage"></pre>
+          <pre>{{ addStatusMessage }}</pre>
         </q-card-section>
 
         <q-card-actions align="right" class="text-primary">
@@ -1095,7 +1095,7 @@
         </q-bar>
 
         <q-card-section>
-          <pre v-html="delStatusMessage"></pre>
+          <pre>{{ delStatusMessage }}</pre>
         </q-card-section>
 
         <q-card-actions align="right" class="text-primary">
@@ -1184,7 +1184,7 @@
         </q-bar>
 
         <q-card-section>
-          <pre id="gde-status-message" v-html="createStatusMessage"></pre>
+          <pre id="gde-status-message">{{ createStatusMessage }}</pre>
         </q-card-section>
 
         <q-card-actions align="right" class="text-primary">
@@ -1211,7 +1211,7 @@
         </q-bar>
 
         <q-card-section>
-          <pre v-html="errors"></pre>
+          <pre>{{ errors }}</pre>
         </q-card-section>
 
         <q-card-actions align="right" class="text-primary">

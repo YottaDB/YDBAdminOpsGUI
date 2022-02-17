@@ -67,33 +67,21 @@
           <div :class="$q.dark.isActive?'text-h6 text-orange':'text-h6 text-purple'">
             PID:{{ $route.params.pid }} Details
           </div>
-          <pre
-          id="details_panel_pre"
-            style="max-height:calc(100vh - 302px)"
-            v-html="processDetails.join('\n')"
-          ></pre>
+          <pre id="details_panel_pre" style="max-height:calc(100vh - 302px)">{{ processDetails.join('\n') }}</pre>
         </q-tab-panel>
 
         <q-tab-panel name="variables" id="variables_panel">
           <div :class="$q.dark.isActive?'text-h6 text-orange':'text-h6 text-purple'">
             PID:{{ $route.params.pid }} Variables
           </div>
-          <pre
-          id="variables_panel_pre"
-            style="max-height:calc(100vh - 302px)"
-            v-html="processVariables.join('\n')"
-          ></pre>
+          <pre id="variables_panel_pre" style="max-height:calc(100vh - 302px)">{{ processVariables.join('\n') }}</pre>
         </q-tab-panel>
 
         <q-tab-panel name="ivariables" id="ivariables_panel">
           <div :class="$q.dark.isActive?'text-h6 text-orange':'text-h6 text-purple'">
             PID:{{ $route.params.pid }} Intrinsic variables
           </div>
-          <pre
-          id="ivariables_panel_pre"
-            style="max-height:calc(100vh - 302px)"
-            v-html="processIVariables.join('\n')"
-          ></pre>
+          <pre id="ivariables_panel_pre" style="max-height:calc(100vh - 302px)">{{ processIVariables.join('\n') }}</pre>
         </q-tab-panel>
       </q-tab-panels>
     </q-card>
