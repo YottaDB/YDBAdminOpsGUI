@@ -1,10 +1,10 @@
 {
   "name": "ydb-admin-ops-gui",
   "version": "0.0.1",
-  "description": "YottaDB Admin",
+  "description": "YottaDB Administration GUI",
   "productName": "YottaDB",
-  "author": "Ahmed A <ahmed@yottadb.com>",
-  "private": true,
+  "author": "YottaDB Developers <info@yottadb.com>",
+  "license": "AGPL-3.0-only",
   "scripts": {
     "build": "./node_modules/@quasar/app/bin/quasar build",
     "build-pwa": "./node_modules/@quasar/app/bin/quasar build -m pwa",
