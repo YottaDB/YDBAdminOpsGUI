@@ -1,7 +1,7 @@
 <!--
 #################################################################
 #                                                               #
-# Copyright (c) 2021 YottaDB LLC and/or its subsidiaries.       #
+# Copyright (c) 2021-2022 YottaDB LLC and/or its subsidiaries.  #
 # All rights reserved.                                          #
 #                                                               #
 #   This source code contains the intellectual property         #
@@ -106,10 +106,6 @@
                       :class="$q.dark.isActive ? 'text-orange' : 'text-purple'"
                       >{{ tableTotal }} Table(s)</q-item-label
                     >
-                    <!--
-                  <q-item-label
-                    >in {{ tablesPaths.length }} location(s)</q-item-label
-                  >-->
                   </q-item-section>
                 </q-item>
                 <div
@@ -131,11 +127,6 @@
                       populateTable(tbl);
                     " :id="'column-' + String(tbl.T)">{{ tbl.T }}</q-btn></q-item-label>
                     </q-item-section>
-                    <!--
-                  <q-item-section side>
-                    <q-item-label caption>{{ tbl.p }}</q-item-label>
-                  </q-item-section>
-                -->
                   </q-item>
                   <q-separator inset />
                 </div>
@@ -193,22 +184,14 @@
           <div class="q-pa-md">
             <q-card>
               <q-card-section>
-                <span
-                  :class="
-                    $q.dark.isActive
-                      ? 'text-orange text-bold'
-                      : 'text-purple text-bold'
-                  "
-                >
-                  SQL Statement:
-                </span>
+                <span :class="$q.dark.isActive ? 'text-orange text-bold' : 'text-purple text-bold' ">SQL Statement:</span>
                 <codemirror
                   :key="'code-panel' + tablekey"
-                  v-if="tabData && tabData[tab] && tabData[tab]['hotSettings']"
+                  v-if="tabData && tabData[tab]"
                   id="codeMirrorTables"
                   ref="cmEditor"
                   @input="onCmCodeChange"
-                  :value="tabData[tab]['hotSettings'].code"
+                  :value="tabData[tab].code"
                   :options="cmOptions"
                 />
                 <q-btn
@@ -224,63 +207,41 @@
                     size="6em"
                   />
                 </div>
-                <hot-table
-                  :key="'tab-panel-' + tablekey"
-                  v-if="
-                    tabData &&
-                      tabData[tab] &&
-                      tabData[tab]['hotSettings'] &&
-                      tabData[tab]['hotSettings'].data.length > 0 &&
-                      !loadingTable
-                  "
-                  :settings="tabData[tab]['hotSettings']"
-                  :id="
-                    $q.dark.isActive ? 'sqlhottable-dark' : 'sqlhottable-light'
-                  "
-                ></hot-table>
+                <table :key="'tab-panel-' + tablekey" v-if="tabData && tabData[tab] && tabData[tab].data && !loadingTable"
+                              :id="$q.dark.isActive ? 'sqltable-dark' : 'sqltable-light'">
+                  <thead>
+                    <tr>
+                      <th v-for="(item, index) in tabData[tab].colHeaders" :key="index">{{ item }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(item2, index2) in tabData[tab].data" :key="index2">
+                      <td v-for="(cell, index3) in tabData[tab].data[index2]" :key="index3">{{ cell }}</td>
+                    </tr>
+                  </tbody>
+                </table>
               </q-card-section>
             </q-card>
           </div>
         </template>
       </q-splitter>
     </transition>
-  <button style="float:right;" id="full-octo-data-btn" @click="octoData=tabData[tab]['hotSettings']['data']" />
-  <div v-show="false" id="full-octo-data-div">
-      {{octoData.join('\n')}}
-  </div>
   </div>
 </template>
 <script>
 import { uid } from "quasar";
 import { codemirror } from "vue-codemirror";
-import { HotTable } from "@handsontable/vue";
 import "codemirror/mode/sql/sql.js";
 export default {
   name: "OCTOSQL",
   components: {
     codemirror,
-    HotTable
   },
   data() {
     return {
       octoData:[],
       collapsed: false,
       tablekey: uid(),
-      hotSettings: {
-        data: [],
-        licenseKey: "non-commercial-and-evaluation",
-        colHeaders: true,
-        rowHeaders: true,
-        width: "100%",
-        height: "calc(100vh - 432px)",
-        colHeaders: [],
-        code: "",
-        cells: function() {
-          var cellProperties = {};
-          cellProperties.readOnly = true;
-          return cellProperties;
-        }
-      },
       tabData: {},
       tab: "",
       tabs: [],
@@ -364,7 +325,7 @@ export default {
           } else {
             this.$q.notify({
               message: "Couldn't find tab",
-              color: "negative "
+              color: "negative"
             });
           }
         });
@@ -387,39 +348,32 @@ export default {
       this.generateNewTableKey();
     },
     async executeSqlStatement() {
-      let done = false;
-      setTimeout(() => {
-        if (done) {
-          return;
-        }
-        this.loadingTable = true;
-      }, 500);
+      // Tell the page we need to spin while we load the table
+      this.loadingTable = true;
+
+      // Get the data
       let data = await this.$M("EXECUTESQL^%YDBWEBTBLS", {
-        STATEMENT: this.tabData[this.tab]["hotSettings"].code
+        STATEMENT: this.tabData[this.tab].code
       });
-      done = true;
-      this.loadingTable = false;
-      let code = this.tabData[this.tab]["hotSettings"]["code"];
+
+      // Save the query as we will modify the model
+      let code = this.tabData[this.tab].code;
       this.$set(this.tabData, this.tab, {});
-      this.$set(
-        this.tabData[this.tab],
-        "hotSettings",
-        Object.assign({}, this.hotSettings)
-      );
-      this.tabData[this.tab]["hotSettings"]["code"] = code;
+      this.$set(this.tabData[this.tab], "code", code);
+
+      // If we have data, show it
       if (data && data.RESULT) {
-        this.$set(
-          this.tabData[this.tab]["hotSettings"],
-          "data",
-          data.RESULT.splice(1)
-        );
-        this.$set(
-          this.tabData[this.tab]["hotSettings"],
-          "colHeaders",
-          data.RESULT[0]
-        );
+        let colHeaders = data.RESULT.shift(); // Remove the column headers
+        data.RESULT.pop(); // Remove counter (x rows) from the end
+        this.$set(this.tabData[this.tab], "data", data.RESULT);
+        this.$set(this.tabData[this.tab], "colHeaders", colHeaders);
       }
+
+      // Not sure what that does
       this.generateNewTableKey();
+
+      // Tell model we finished loading
+      this.loadingTable = false;
     },
     getCurrentActiveTable(tbl) {
       return this.tab === tbl;
@@ -461,14 +415,7 @@ export default {
       this.selectedTbl = tbl;
       this.loadedNodesMessage = "";
       this.$set(this.tabData, this.tab, {});
-      this.$set(
-        this.tabData[this.tab],
-        "hotSettings",
-        Object.assign({}, this.hotSettings)
-      );
-      this.tabData[this.tab][
-        "hotSettings"
-      ].code = `SELECT * FROM ${tbl.T} LIMIT 100;`;
+      this.tabData[this.tab].code = `SELECT * FROM ${tbl.T} LIMIT 100;`;
       this.currentActiveTable = tbl.T;
       await this.executeSqlStatement();
     },
@@ -522,7 +469,7 @@ export default {
       this.$refs.infscroll.trigger();
     },
     onCmCodeChange(newCode) {
-      this.tabData[this.tab]["hotSettings"].code = newCode;
+      this.tabData[this.tab].code = newCode;
     }
   },
   computed: {
@@ -574,37 +521,40 @@ export default {
 };
 </script>
 <style>
-@import "~handsontable/dist/handsontable.full.css";
 @import "../../../node_modules/codemirror/lib/codemirror.css";
 @import "../../../node_modules/codemirror/theme/abcdef.css";
-#sqlhottable-dark > .handsontable td, #sqlhottable-dark > .handsontable .htDimmed {
+#sqltable-dark td {
   background-color: #000000;
   color: #ffffff;
 }
-#sqlhottable-dark > .handsontable th {
+#sqltable-dark th {
   color: #ffffff;
   background-color: rgb(83, 83, 83);
 }
 
-#sqlhottable-light > .handsontable#codeMirrorTables >  td, #sqlhottable-light > .handsontable .htDimmed {
-  background-color: #ffffff;
+#sqltable-light td {
   color: #000000;
+  background-color: #ffffff;
 }
-#sqlhottable-light > .handsontable th {
+#sqltable-light th {
   color: #000000;
   background-color: rgb(238, 238, 238);
+}
+
+#sqltable-dark th, #sqltable-light td {
+  border: 1px solid gray;
+}
+
+#sqltable-dark, #sqltable-light {
+  border-collapse: collapse;
 }
 
 #codeMirrorTables > .CodeMirror {
   border: 1px solid #eee;
   height: 150px;
 }
-.wraptext,
-pre {
+
+.wraptext, pre {
   white-space: pre-wrap; /* Since CSS 2.1 */
-  white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
-  white-space: -pre-wrap; /* Opera 4-6 */
-  white-space: -o-pre-wrap; /* Opera 7 */
-  word-wrap: break-word; /* Internet Explorer 5.5+ */
 }
 </style>
