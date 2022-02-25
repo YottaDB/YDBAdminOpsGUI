@@ -167,6 +167,7 @@
                   <q-item-section>
                     <q-item-label
                       ><q-btn
+                      no-caps
                         flat
                         class="full-width"
                         @click="populateRoutine(rtn)"
